@@ -1,0 +1,6 @@
+# Deploy secrets — never commit this
+deploy.env
+
+# OS
+.DS_Store
+Thumbs.db

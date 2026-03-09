@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="th">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>แจ้งเคลมออนไลน์ | Dhipaya</title>
+
+    <!-- DNS Prefetch for performance -->
+    <link rel="dns-prefetch" href="https://fonts.googleapis.com" />
+
+    <!-- Preconnect for critical resources -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+
+    <!-- Preload Google Fonts for better FCP -->
+    <link
+      rel="preload"
+      href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;600;700&display=swap"
+      as="style"
+    />
+
+    <!-- Critical CSS inline for faster FCP -->
+    <style>
+      :root{--tip-blue:#1B1464;--tip-bg:#F4F6F9}
+      body{font-family:'Sarabun',system-ui,sans-serif;background-color:var(--tip-bg);margin:0}
+      #root{min-height:100vh}
+    </style>
+
+    <!-- Google Fonts - async load -->
+    <link
+      href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;600;700&display=swap"
+      rel="stylesheet"
+      media="print"
+      onload="this.media='all'"
+    />
+  </head>
+  <body>
+    <div id="root"></div>
+    <!-- LIFF SDK: blocking script so LINE's native bridge is ready before React loads -->
+    <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+    <script type="module" src="/src/entries/claim.tsx"></script>
+  </body>
+</html>
