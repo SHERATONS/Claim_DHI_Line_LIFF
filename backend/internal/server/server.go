@@ -20,8 +20,24 @@ func NewGinServer(cfg config.Config) *GinServer {
 
 	corsConfig := cors.DefaultConfig()
 	corsConfig.AllowOrigins = cfg.AllowedOrigins
-	corsConfig.AllowMethods = []string{"GET", "POST", "OPTIONS"}
-	corsConfig.AllowHeaders = []string{"Content-Type", "Authorization", "X-Requested-With", "X-File-Name", "X-Case-Id"}
+	corsConfig.AllowMethods = []string{
+		"GET",
+		"POST",
+		"PUT",
+		"DELETE",
+		"OPTIONS",
+	}
+
+	corsConfig.AllowHeaders = []string{
+		"Origin",
+		"Content-Type",
+		"Accept",
+		"Authorization",
+		"X-Requested-With",
+		"X-File-Name",
+		"X-Case-Id",
+	}
+	
 	corsConfig.AllowCredentials = true
 	corsConfig.MaxAge = 12 * time.Hour
 

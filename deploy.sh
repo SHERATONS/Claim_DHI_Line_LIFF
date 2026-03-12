@@ -71,6 +71,7 @@ SKIP_LIFF_AUTH=$SKIP_LIFF_AUTH,\
 ALLOWED_ORIGINS=$ALLOWED_ORIGINS"
 
   echo ""
+  
   echo "Backend deployed."
 }
 
@@ -92,6 +93,14 @@ deploy_frontend() {
 
   cd "$SCRIPT_DIR/front-end"
 
+  # Generate a temporary .env.production file so Vite can bake these variables into the build
+  # during the Docker 'COPY . .' step.
+  cat <<EOF > .env.production
+VITE_API_URL=https://claim-backend-159899010776.asia-southeast1.run.app
+VITE_LIFF_ID=$LIFF_CHANNEL_ID-DpJyQIAL
+VITE_USE_LOCAL_SAVE=false
+EOF
+  
   gcloud run deploy "$CR_FRONTEND_SERVICE_NAME" \
     --source . \
     --region "$CR_REGION" \
