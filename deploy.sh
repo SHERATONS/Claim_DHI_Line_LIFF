@@ -12,7 +12,7 @@
 # USAGE:
 #   ./deploy.sh             → deploy both backend and frontend
 #   ./deploy.sh backend     → backend only  (Cloud Run)
-#   ./deploy.sh frontend    → frontend only (GCS)
+#   ./deploy.sh frontend    → frontend only (Cloud Run)
 # ─────────────────────────────────────────────────────────────────────────────
 set -euo pipefail
 
@@ -75,50 +75,32 @@ ALLOWED_ORIGINS=$ALLOWED_ORIGINS"
 }
 
 # ─────────────────────────────────────────────────────────────────────────────
-# FRONTEND — builds with Vite and syncs to GCS
+# FRONTEND — builds from source and deploys to Cloud Run (nginx + Vite SPA)
 #
 # Notes:
-#   - gsutil rsync -d deletes files in the bucket that are no longer in dist/.
-#     This keeps the bucket clean after file renames. Safe to use here.
-#   - Cache-Control: no-cache is set on index.html so browsers always fetch
-#     the latest entry point. JS/CSS assets use content-hash filenames so they
-#     can be cached indefinitely (Vite handles this by default).
-#   - .gz and .br are pre-compressed variants that GCS serves automatically
-#     when Accept-Encoding is set. Silently skipped if they don't exist.
+#   - The Dockerfile uses a multi-stage build:
+#     1. Node/pnpm stage: installs deps and runs `pnpm build`
+#     2. nginx stage: serves the static files from dist/
+#   - --allow-unauthenticated enables public access (LIFF handles auth).
+#   - --source . uses Cloud Build to build the Docker image from Dockerfile.
 # ─────────────────────────────────────────────────────────────────────────────
 deploy_frontend() {
   echo ""
   echo "══════════════════════════════════════"
-  echo "  Building frontend"
+  echo "  Deploying frontend → Cloud Run"
   echo "══════════════════════════════════════"
 
   cd "$SCRIPT_DIR/front-end"
-  pnpm run build
 
-  echo ""
-  echo "══════════════════════════════════════"
-  echo "  Uploading frontend → GCS"
-  echo "══════════════════════════════════════"
-
-  gsutil -m rsync -r -d dist/ "gs://$GCS_BUCKET/"
-
-  # Force browsers to re-fetch the HTML entry point on every visit.
-  # Silently skip compressed variants if they weren't generated.
-  gsutil -m setmeta \
-    -h "Cache-Control:no-cache, no-store, must-revalidate" \
-    "gs://$GCS_BUCKET/index.html" 2>/dev/null || true
-
-  gsutil -m setmeta \
-    -h "Cache-Control:no-cache, no-store, must-revalidate" \
-    "gs://$GCS_BUCKET/index.html.gz" 2>/dev/null || true
-
-  gsutil -m setmeta \
-    -h "Cache-Control:no-cache, no-store, must-revalidate" \
-    "gs://$GCS_BUCKET/index.html.br" 2>/dev/null || true
+  gcloud run deploy "$CR_FRONTEND_SERVICE_NAME" \
+    --source . \
+    --region "$CR_REGION" \
+    --platform managed \
+    --allow-unauthenticated \
+    --port 8080
 
   echo ""
   echo "Frontend deployed."
-  echo "  URL: https://storage.googleapis.com/$GCS_BUCKET/index.html"
 }
 
 # ─────────────────────────────────────────────────────────────────────────────

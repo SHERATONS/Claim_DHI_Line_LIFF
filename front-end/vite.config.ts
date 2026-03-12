@@ -59,7 +59,7 @@ export default defineConfig(({ mode }) => {
 
   return {
     plugins,
-    base: mode === 'production' ? '/demo-claim/' : '/',
+    base: '/',
     resolve: {
       alias: {
         '@': path.resolve(__dirname, './src'),
