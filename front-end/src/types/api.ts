@@ -5,6 +5,7 @@
 
 // Submit Claim Response
 export interface SubmitClaimResponse {
+  notificationNo?: string;
   success: boolean;
   caseId?: string;
   caseNumber?: string;

@@ -1,0 +1,1 @@
+src/pages/TA_Claim/ClaimDetailsSection.tsx(8,1): error TS6133: 'DAMAGE_DETAILS_TA' is declared but its value is never read.

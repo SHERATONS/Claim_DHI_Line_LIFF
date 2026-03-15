@@ -13,8 +13,8 @@ interface ClaimDetailsSectionProps {
         lossPlace: string;
         projectTitle: string;
         contractorName: string;
-        damageDetails: string;
         damageType: string;
+        lossReserve: string;
     };
     errors: {
         incidentDateTime?: string;
@@ -25,8 +25,8 @@ interface ClaimDetailsSectionProps {
         zipcode?: string;
         projectTitle?: string;
         contractorName?: string;
-        damageDetails?: string;
         damageType?: string;
+        lossReserve?: string;
     };
     onChange: (field: string, value: string) => void;
     // Location cascade
@@ -71,7 +71,7 @@ export function convertBEtoCE(dateTimeValue: string): string {
         year -= 543;
     }
 
-    return `${year}-${dateParts[1]}-${dateParts[2]} ${parts[1]}`;
+    return `${year}-${dateParts[1]}-${dateParts[2]}T${parts[1]}`;
 }
 
 export function ClaimDetailsSection({
@@ -108,25 +108,18 @@ export function ClaimDetailsSection({
 
     return (
         <Card title="รายละเอียดเคลม (CAR-EAR CMP)">
-            <div className="mb-3">
-                <label htmlFor="incidentDateTime" className="form-label">
-                    วันที่/เวลาเกิดเหตุ
-                    <span className="required"> *</span>
-                </label>
-                <input
-                    type="datetime-local"
-                    id="incidentDateTime"
-                    className={`form-control ${errors.incidentDateTime ? 'is-invalid' : ''}`}
-                    value={values.incidentDateTime}
-                    onChange={(e) => onChange('incidentDateTime', e.target.value)}
-                    aria-invalid={!!errors.incidentDateTime}
-                />
-                {errors.incidentDateTime && (
-                    <div className="invalid-feedback" role="alert">
-                        {errors.incidentDateTime}
-                    </div>
-                )}
-            </div>
+            <Input
+                id="incidentDateTime"
+                label="วันที่/เวลาเกิดเหตุ"
+                type="datetime-local"
+                value={values.incidentDateTime}
+                onChange={(e) => {
+                    const val = e.target.value;
+                    onChange('incidentDateTime', val);
+                }}
+                error={errors.incidentDateTime}
+                required
+            />
 
             <Input
                 id="projectTitle"
@@ -207,23 +200,25 @@ export function ClaimDetailsSection({
             />
 
             <Input
-                id="damageDetails"
-                label="สาเหตุความเสียหาย"
-                value={values.damageDetails}
-                onChange={(e) => onChange('damageDetails', e.target.value)}
-                error={errors.damageDetails}
-                required
-                placeholder="- สาเหตุความเสียหาย -"
-            />
-
-            <Input
                 id="damageType"
-                label="ลักษณะความเสียหาย หรือ รายละเอียดเหตุการณ์"
+                label="รายละเอียดของความเสียหายเพิ่มเติม"
                 value={values.damageType}
                 onChange={(e) => onChange('damageType', e.target.value)}
                 error={errors.damageType}
                 required
-                placeholder="- อะไรเสียหาย/เสียหายอย่างไร -"
+                placeholder="- ระบุรายละเอียดของความเสียหายเพิ่มเติม -"
+            />
+
+            <Input
+                id="lossReserve"
+                label="ประมาณการค่าสินไหม"
+                type="text"
+                inputMode="decimal"
+                value={values.lossReserve}
+                onChange={(e) => onChange('lossReserve', e.target.value)}
+                error={errors.lossReserve}
+                required
+                placeholder="0.00"
             />
         </Card>
     );

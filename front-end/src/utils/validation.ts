@@ -191,15 +191,21 @@ const baseClaimSchema = z.object({
 
 // 1. FR-IAR (Fire & IAR)
 export const frIarSchema = baseClaimSchema.extend({
-
-  causeOfLoss: z
-    .string()
-    .min(1, 'กรุณาเลือกประเภทภัย/สาเหตุ'),
-
   lossPlace: z
     .string()
     .min(1, 'กรุณากรอกสถานที่เกิดเหตุ')
     .max(500, 'สถานที่เกิดเหตุยาวเกินไป')
+    .superRefine((val, ctx) => {
+      const result = validateSafeText(val);
+      if (!result.valid) {
+        ctx.addIssue({ code: 'custom', message: result.error });
+      }
+    }),
+
+  damageType: z
+    .string()
+    .min(1, 'กรุณาระบุรายละเอียดของความเสียหายเพิ่มเติม')
+    .max(500, 'รายละเอียดของความเสียหายเพิ่มเติมยาวเกินไป')
     .superRefine((val, ctx) => {
       const result = validateSafeText(val);
       if (!result.valid) {
@@ -281,17 +287,6 @@ export const carEarCpmSchema = baseClaimSchema.extend({
     .min(1, 'กรุณาเลือกตำบล/แขวงเพื่อให้ระบบกรอกรหัสไปรษณีย์')
     .regex(/^\d{5}$/, 'รหัสไปรษณีย์ต้องเป็นตัวเลข 5 หลัก'),
 
-  damageDetails: z
-    .string()
-    .min(1, 'กรุณาระบุรายละเอียดความเสียหาย')
-    .max(100, 'รายละเอียดความเสียหายยาวเกินไป')
-    .superRefine((val, ctx) => {
-      const result = validateSafeText(val);
-      if (!result.valid) {
-        ctx.addIssue({ code: 'custom', message: result.error });
-      }
-    }),
-
   damageType: z
     .string()
     .min(1, 'กรุณาระบุลักษณะความเสียหาย')
@@ -302,6 +297,8 @@ export const carEarCpmSchema = baseClaimSchema.extend({
         ctx.addIssue({ code: 'custom', message: result.error });
       }
     }),
+
+  lossReserve: positiveAmount,
 });
 
 // 3. Drone
@@ -330,16 +327,8 @@ export const droneSchema = baseClaimSchema.extend({
 
   lossPlace: z
     .string()
-    .min(1, 'กรุณาเลือกสถานที่เกิดเหตุ'),
-
-  lossPlaceOther: z
-    .string()
-    .optional(),
-
-  damageDetails: z
-    .string()
-    .min(1, 'กรุณาระบุรายละเอียดความเสียหาย')
-    .max(100, 'รายละเอียดความเสียหายยาวเกินไป')
+    .min(1, 'กรุณาระบุสถานที่เกิดเหตุ')
+    .max(200, 'สถานที่เกิดเหตุยาวเกินไป')
     .superRefine((val, ctx) => {
       const result = validateSafeText(val);
       if (!result.valid) {
@@ -349,24 +338,18 @@ export const droneSchema = baseClaimSchema.extend({
 
   damageType: z
     .string()
-    .min(1, 'กรุณาระบุลักษณะความเสียหาย')
-    .max(100, 'ลักษณะความเสียหายยาวเกินไป')
+    .min(1, 'กรุณาระบุรายละเอียดของความเสียหายเพิ่มเติม')
+    .max(200, 'รายละเอียดของความเสียหายเพิ่มเติมยาวเกินไป')
     .superRefine((val, ctx) => {
       const result = validateSafeText(val);
       if (!result.valid) {
         ctx.addIssue({ code: 'custom', message: result.error });
       }
     }),
-}).superRefine((data, ctx) => {
-  // Validate lossPlaceOther if lossPlace is '007' (Others)
-  if (data.lossPlace === '007' && !data.lossPlaceOther) {
-    ctx.addIssue({
-      code: 'custom',
-      path: ['lossPlaceOther'],
-      message: 'กรุณาระบุสถานที่เกิดเหตุ (อื่นๆ)',
-    });
-  }
+
+  lossReserve: positiveAmount,
 });
+
 
 // 4. Pet
 export const petSchema = baseClaimSchema.extend({
@@ -426,17 +409,6 @@ export const petSchema = baseClaimSchema.extend({
       }
     }),
 
-  causeOfIllness: z
-    .string()
-    .min(1, 'กรุณาระบุสาเหตุความเสียหาย/เจ็บป่วย')
-    .max(200, 'สาเหตุความเสียหายยาวเกินไป')
-    .superRefine((val, ctx) => {
-      const result = validateSafeText(val);
-      if (!result.valid) {
-        ctx.addIssue({ code: 'custom', message: result.error });
-      }
-    }),
-
   damageType: z
     .string()
     .min(1, 'กรุณาระบุลักษณะความเสียหาย')
@@ -447,6 +419,8 @@ export const petSchema = baseClaimSchema.extend({
         ctx.addIssue({ code: 'custom', message: result.error });
       }
     }),
+
+  lossReserve: positiveAmount,
 }).superRefine((data, ctx) => {
   // Validate petTypeOther if petType is '006' (Others)
   if (data.petType === '006' && !data.petTypeOther) {
@@ -460,64 +434,54 @@ export const petSchema = baseClaimSchema.extend({
 
 // 5. Marine HULL
 export const marineHullSchema = baseClaimSchema.extend({
+  lossPlace: z
+    .string()
+    .min(1, 'กรุณาระบุสถานที่เกิดเหตุ')
+    .max(200, 'สถานที่เกิดเหตุยาวเกินไป')
+    .superRefine((val, ctx) => {
+      const result = validateSafeText(val);
+      if (!result.valid) {
+        ctx.addIssue({ code: 'custom', message: result.error });
+      }
+    }),
+
   boatName: z
     .string()
     .min(1, 'กรุณากรอกชื่อเรือ')
-    .max(200, 'ชื่อเรือยาวเกินไป')
+    .max(100, 'ชื่อเรือยาวเกินไป')
     .superRefine((val, ctx) => {
       const result = validateSafeText(val);
       if (!result.valid) {
         ctx.addIssue({ code: 'custom', message: result.error });
       }
     }),
-
-  lossPlace: z
-    .string()
-    .min(1, 'กรุณาเลือกสถานที่เกิดเหตุ'), // Select dropdown
-
-  lossPlaceOther: z
-    .string()
-    .optional(),
-
-  damageDetails: z
-    .string()
-    .min(1, 'กรุณาเลือกสาเหตุการเสียหาย'),
-
-  damageDetailsOther: z
-    .string()
-    .optional(),
 
   damageType: z
     .string()
-    .min(1, 'กรุณาระบุลักษณะความเสียหาย')
-    .max(100, 'ลักษณะความเสียหายยาวเกินไป')
+    .min(1, 'กรุณาระบุรายละเอียดของความเสียหายเพิ่มเติม')
+    .max(200, 'รายละเอียดของความเสียหายเพิ่มเติมยาวเกินไป')
     .superRefine((val, ctx) => {
       const result = validateSafeText(val);
       if (!result.valid) {
         ctx.addIssue({ code: 'custom', message: result.error });
       }
     }),
-}).superRefine((data, ctx) => {
-  // Validate lossPlaceOther if lossPlace is '007' (Others)
-  if (data.lossPlace === '007' && !data.lossPlaceOther) {
-    ctx.addIssue({
-      code: 'custom',
-      path: ['lossPlaceOther'],
-      message: 'กรุณาระบุสถานที่เกิดเหตุ (อื่นๆ)',
-    });
-  }
 
-  // Validate damageDetailsOther if damageDetails is '005' (Others)
-  if (data.damageDetails === '005' && !data.damageDetailsOther) {
-    ctx.addIssue({
-      code: 'custom',
-      path: ['damageDetailsOther'],
-      message: 'กรุณาระบุสาเหตุการเสียหาย (อื่นๆ)',
-    });
-  }
+  lossReserve: positiveAmount,
 });
 
 export const marineCargoSchema = baseClaimSchema.extend({
+  lossPlace: z
+    .string()
+    .min(1, 'กรุณาระบุสถานที่เกิดเหตุ')
+    .max(200, 'สถานที่เกิดเหตุยาวเกินไป')
+    .superRefine((val, ctx) => {
+      const result = validateSafeText(val);
+      if (!result.valid) {
+        ctx.addIssue({ code: 'custom', message: result.error });
+      }
+    }),
+
   vehicleName: z
     .string()
     .min(1, 'กรุณากรอกชื่อยานพาหนะ')
@@ -529,48 +493,41 @@ export const marineCargoSchema = baseClaimSchema.extend({
       }
     }),
 
-  lossPlace: z
+  vehiclePlate: z
     .string()
-    .min(1, 'กรุณาเลือกสถานที่เกิดเหตุ'),
-
-  lossPlaceOther: z
-    .string()
-    .optional(),
+    .min(1, 'กรุณากรอกทะเบียนพาหนะขนส่ง')
+    .max(100, 'ทะเบียนพาหนะขนส่งยาวเกินไป')
+    .superRefine((val, ctx) => {
+      const result = validateSafeText(val);
+      if (!result.valid) {
+        ctx.addIssue({ code: 'custom', message: result.error });
+      }
+    }),
 
   transportationType: z
     .string()
     .min(1, 'กรุณากรอกประเภทการขนส่ง'),
 
-  damageDetails: z
-    .string()
-    .min(1, 'กรุณาระบุสาเหตุความเสียหาย'),
-
   damageType: z
     .string()
-    .min(1, 'กรุณาระบุลักษณะความเสียหาย')
-    .max(100, 'ลักษณะความเสียหายยาวเกินไป')
+    .min(1, 'กรุณาระบุรายละเอียดของความเสียหายเพิ่มเติม')
+    .max(200, 'รายละเอียดของความเสียหายเพิ่มเติมยาวเกินไป')
     .superRefine((val, ctx) => {
       const result = validateSafeText(val);
       if (!result.valid) {
         ctx.addIssue({ code: 'custom', message: result.error });
       }
     }),
-}).superRefine((data, ctx) => {
-  // Validate lossPlaceOther if lossPlace is '007' (Others)
-  if (data.lossPlace === '007' && !data.lossPlaceOther) {
-    ctx.addIssue({
-      code: 'custom',
-      path: ['lossPlaceOther'],
-      message: 'กรุณาระบุสถานที่เกิดเหตุ (อื่นๆ)',
-    });
-  }
+
+  lossReserve: positiveAmount,
 });
+
 
 export const marineClSchema = baseClaimSchema.extend({
-  carPlate: z
+  lossPlace: z
     .string()
-    .min(1, 'กรุณากรอกทะเบียนรถ')
-    .max(20, 'ทะเบียนรถยาวเกินไป')
+    .min(1, 'กรุณาระบุสถานที่เกิดเหตุ')
+    .max(200, 'สถานที่เกิดเหตุยาวเกินไป')
     .superRefine((val, ctx) => {
       const result = validateSafeText(val);
       if (!result.valid) {
@@ -578,63 +535,48 @@ export const marineClSchema = baseClaimSchema.extend({
       }
     }),
 
-  lossPlace: z
+  vehicleName: z
     .string()
-    .min(1, 'กรุณาเลือกสถานที่เกิดเหตุ'),
+    .min(1, 'กรุณากรอกชื่อพาหนะขนส่ง')
+    .max(100, 'ชื่อพาหนะขนส่งยาวเกินไป')
+    .superRefine((val, ctx) => {
+      const result = validateSafeText(val);
+      if (!result.valid) {
+        ctx.addIssue({ code: 'custom', message: result.error });
+      }
+    }),
 
-  lossPlaceOther: z
+  vehiclePlate: z
     .string()
-    .optional(),
+    .min(1, 'กรุณากรอกทะเบียนพาหนะขนส่ง')
+    .max(100, 'ทะเบียนพาหนะขนส่งยาวเกินไป')
+    .superRefine((val, ctx) => {
+      const result = validateSafeText(val);
+      if (!result.valid) {
+        ctx.addIssue({ code: 'custom', message: result.error });
+      }
+    }),
 
-  province: z
+  transportationType: z
     .string()
-    .min(1, 'กรุณาเลือกจังหวัด'),
-
-  district: z
-    .string()
-    .min(1, 'กรุณาเลือกอำเภอ/เขต'),
-
-  damageDetails: z
-    .string()
-    .min(1, 'กรุณาเลือกสาเหตุการเสียหาย'),
-
-  damageDetailsOther: z
-    .string()
-    .optional(),
+    .min(1, 'กรุณาเลือกประเภทการขนส่ง'),
 
   damageType: z
     .string()
-    .min(1, 'กรุณาระบุลักษณะความเสียหาย')
-    .max(100, 'ลักษณะความเสียหายยาวเกินไป')
+    .min(1, 'กรุณาระบุรายละเอียดของความเสียหายเพิ่มเติม')
+    .max(200, 'รายละเอียดของความเสียหายเพิ่มเติมยาวเกินไป')
     .superRefine((val, ctx) => {
       const result = validateSafeText(val);
       if (!result.valid) {
         ctx.addIssue({ code: 'custom', message: result.error });
       }
     }),
-}).superRefine((data, ctx) => {
-  // Validate lossPlaceOther if lossPlace is '007' (Others)
-  if (data.lossPlace === '007' && !data.lossPlaceOther) {
-    ctx.addIssue({
-      code: 'custom',
-      path: ['lossPlaceOther'],
-      message: 'กรุณาระบุสถานที่เกิดเหตุ (อื่นๆ)',
-    });
-  }
 
-  // Validate damageDetailsOther if damageDetails is '005' (Others)
-  if (data.damageDetails === '005' && !data.damageDetailsOther) {
-    ctx.addIssue({
-      code: 'custom',
-      path: ['damageDetailsOther'],
-      message: 'กรุณาระบุสาเหตุการเสียหาย (อื่นๆ)',
-    });
-  }
+  lossReserve: positiveAmount,
 });
 
-// 6. Golf
+
 export const golfSchema = baseClaimSchema.extend({
-  // Reuse CAR-EAR-CPM structure for now as requested
   // Golf specific fields
   Golfer: z
     .string()
@@ -642,16 +584,8 @@ export const golfSchema = baseClaimSchema.extend({
 
   lossPlace: z
     .string()
-    .min(1, 'กรุณาเลือกสถานที่เกิดเหตุ'), // Select dropdown
-
-  lossPlaceOther: z
-    .string()
-    .optional(),
-
-  damageDetails: z
-    .string()
-    .min(1, 'กรุณาระบุสาเหตุความเสียหาย')
-    .max(100, 'สาเหตุความเสียหายยาวเกินไป')
+    .min(1, 'กรุณาระบุสถานที่เกิดเหตุ')
+    .max(200, 'สถานที่เกิดเหตุยาวเกินไป')
     .superRefine((val, ctx) => {
       const result = validateSafeText(val);
       if (!result.valid) {
@@ -661,35 +595,21 @@ export const golfSchema = baseClaimSchema.extend({
 
   damageType: z
     .string()
-    .min(1, 'กรุณาระบุลักษณะความเสียหาย')
-    .max(100, 'ลักษณะความเสียหายยาวเกินไป')
+    .min(1, 'กรุณาระบุรายละเอียดของความเสียหายเพิ่มเติม')
+    .max(200, 'รายละเอียดของความเสียหายเพิ่มเติมยาวเกินไป')
     .superRefine((val, ctx) => {
       const result = validateSafeText(val);
       if (!result.valid) {
         ctx.addIssue({ code: 'custom', message: result.error });
       }
     }),
-}).superRefine((data, ctx) => {
-  // Validate lossPlaceOther if lossPlace is '007' (Others)
-  if (data.lossPlace === '007' && !data.lossPlaceOther) {
-    ctx.addIssue({
-      code: 'custom',
-      path: ['lossPlaceOther'],
-      message: 'กรุณาระบุสถานที่เกิดเหตุ (อื่นๆ)',
-    });
-  }
+
+  lossReserve: positiveAmount,
 });
+
 
 // 7. TA (Travel Accident)
 export const taSchema = baseClaimSchema.extend({
-  country: z
-    .string()
-    .min(1, 'กรุณาเลือกประเทศ'),
-
-  town: z
-    .string()
-    .min(1, 'กรุณาเลือกเมือง/รัฐ'),
-
   accidentPlace: z
     .string()
     .min(1, 'กรุณาระบุสถานที่เกิดเหตุ (เช่น ชื่อโรงแรม, ชื่อถนน)')
@@ -701,21 +621,10 @@ export const taSchema = baseClaimSchema.extend({
       }
     }),
 
-  travelFlight: z
+  flightNumber: z
     .string()
-    .min(1, 'กรุณาระบุเที่ยวบิน')
-    .max(50, 'เลขเที่ยวบินยาวเกินไป')
-    .superRefine((val, ctx) => {
-      const result = validateSafeText(val);
-      if (!result.valid) {
-        ctx.addIssue({ code: 'custom', message: result.error });
-      }
-    }),
-
-  damageDetails: z
-    .string()
-    .min(1, 'กรุณาระบุรายละเอียดเหตุการณ์')
-    .max(500, 'รายละเอียดเหตุการณ์ยาวเกินไป')
+    .min(1, 'กรุณาระบุหมายเลขเที่ยวบิน')
+    .max(50, 'หมายเลขเที่ยวบินยาวเกินไป')
     .superRefine((val, ctx) => {
       const result = validateSafeText(val);
       if (!result.valid) {
@@ -733,6 +642,8 @@ export const taSchema = baseClaimSchema.extend({
         ctx.addIssue({ code: 'custom', message: result.error });
       }
     }),
+
+  lossReserve: positiveAmount,
 });
 
 // 8. A&H / Death
@@ -753,6 +664,17 @@ export const ahDeathSchema = z.object({
 
   email: emailOptional,
 
+  lossPlace: z
+    .string()
+    .min(1, 'กรุณากรอกสถานที่เกิดเหตุ')
+    .max(500, 'สถานที่เกิดเหตุยาวเกินไป')
+    .superRefine((val, ctx) => {
+      const result = validateSafeText(val);
+      if (!result.valid) {
+        ctx.addIssue({ code: 'custom', message: result.error });
+      }
+    }),
+
   accidentDate: z
     .string()
     .min(1, 'กรุณาเลือกวันที่เกิดเหตุ หรือ เจ็บป่วย'),
@@ -760,10 +682,6 @@ export const ahDeathSchema = z.object({
   treatmentDate: z
     .string()
     .min(1, 'กรุณาเลือกวันที่เข้ารับการรักษา'),
-
-  documentDeliveryDate: z
-    .string()
-    .min(1, 'กรุณาเลือกวันที่จัดส่งเอกสาร'),
 
   treatmentHospital: z
     .string()
@@ -778,7 +696,7 @@ export const ahDeathSchema = z.object({
 
   causeOfIllness: z
     .string()
-    .min(1, 'กรุณาระบุสาเหตุของความเจ็บป่วย')
+    .min(1, 'กรุณาระบุสาเหตุของความเจ็นป่วย')
     .max(200, 'สาเหตุของความเจ็บป่วยยาวเกินไป')
     .superRefine((val, ctx) => {
       const result = validateSafeText(val);
@@ -786,6 +704,34 @@ export const ahDeathSchema = z.object({
         ctx.addIssue({ code: 'custom', message: result.error });
       }
     }),
+
+  lossReserve: positiveAmount,
+});
+
+export const otherSchema = baseClaimSchema.extend({
+  lossPlace: z
+    .string()
+    .min(1, 'กรุณาระบุสถานที่เกิดเหตุ')
+    .max(200, 'สถานที่เกิดเหตุยาวเกินไป')
+    .superRefine((val, ctx) => {
+      const result = validateSafeText(val);
+      if (!result.valid) {
+        ctx.addIssue({ code: 'custom', message: result.error });
+      }
+    }),
+
+  damageType: z
+    .string()
+    .min(1, 'กรุณาระบุรายละเอียดของความเสียหายเพิ่มเติม')
+    .max(200, 'รายละเอียดของความเสียหายเพิ่มเติมยาวเกินไป')
+    .superRefine((val, ctx) => {
+      const result = validateSafeText(val);
+      if (!result.valid) {
+        ctx.addIssue({ code: 'custom', message: result.error });
+      }
+    }),
+
+  lossReserve: positiveAmount,
 });
 
 // Keep generic claimFormSchema for backward compatibility if needed, OR deprecate it.
@@ -813,6 +759,8 @@ export type GolfSchema = z.infer<typeof golfSchema>;
 export type TASchema = z.infer<typeof taSchema>;
 
 export type AHDeathSchema = z.infer<typeof ahDeathSchema>;
+
+export type OtherSchema = z.infer<typeof otherSchema>;
 
 // ============================================
 // File Validation (standalone functions)

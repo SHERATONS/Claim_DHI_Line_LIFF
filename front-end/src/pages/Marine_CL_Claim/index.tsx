@@ -4,13 +4,13 @@
  */
 
 import { useState } from 'react';
-import { useLiff, useFileUpload, useLocationCascade } from '@/hooks';
+import { useLiff, useFileUpload } from '@/hooks';
 import { marineClSchema } from '@/utils/validation';
 import { scrollToFirstError } from '@/utils/dom';
 import { convertBEtoCE } from './ClaimDetailsSection';
 import { LoadingOverlay, SuccessScreen, ErrorModal } from '@/components';
 import { submitClaim } from '@/services/api';
-import { getContactEmail, USE_LOCAL_SAVE } from '@/config';
+import { getContactEmail } from '@/config';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faPaperPlane } from '@fortawesome/free-solid-svg-icons';
 import { InsuredInfoSection, PersonalDocumentUpload } from '@/components/features/claim';
@@ -18,7 +18,7 @@ import { ClaimDetailsSection } from './ClaimDetailsSection';
 
 // Placeholder policy data — will be replaced by Loxley API integration.
 const MOCK_POLICY_DATA = {
-    policyNumber: 'POL-2568-001234',
+    policyNumber: '14025-111-170001231',
     policyHolder: 'นายทดสอบ ระบบเคลม',
     idcard: '1-1234-56789-01-2',
 };
@@ -27,34 +27,26 @@ interface FormValues {
     notifierName: string;
     phone: string;
     email: string;
-    causeOfLoss: string;
     incidentDateTime: string;
     lossPlace: string;
-    lossPlaceOther?: string;
-    lossReserve: string;
-    carPlate: string;
-    damageDetails: string;
-    damageDetailsOther?: string;
+    vehicleName: string;
+    vehiclePlate: string;
+    transportationType: string;
     damageType: string;
+    lossReserve: string;
 }
 
 interface FormErrors {
     notifierName?: string;
     phone?: string;
     email?: string;
-    causeOfLoss?: string;
     incidentDateTime?: string;
     lossPlace?: string;
-    lossPlaceOther?: string;
-    lossReserve?: string;
-    province?: string;
-    district?: string;
-    subdistrict?: string;
-    zipcode?: string;
-    carPlate?: string;
-    damageDetails?: string;
-    damageDetailsOther?: string;
+    vehicleName?: string;
+    vehiclePlate?: string;
+    transportationType?: string;
     damageType?: string;
+    lossReserve?: string;
 }
 
 export default function ClaimForm() {
@@ -69,19 +61,15 @@ export default function ClaimForm() {
         notifierName: '',
         phone: '',
         email: '',
-        causeOfLoss: '',
         incidentDateTime: '',
         lossPlace: '',
-        lossPlaceOther: '',
-        lossReserve: '',
-        carPlate: '',
-        damageDetails: '',
-        damageDetailsOther: '',
+        vehicleName: '',
+        vehiclePlate: '',
+        transportationType: '',
         damageType: '',
+        lossReserve: '',
     });
     const [errors, setErrors] = useState<FormErrors>({});
-
-    const location = useLocationCascade();
 
     const docUpload = useFileUpload({ maxFiles: 10, autoCompress: true });
     const [docFileErrors, setDocFileErrors] = useState<string[]>([]);
@@ -91,11 +79,13 @@ export default function ClaimForm() {
         success: boolean;
         error: string | null;
         caseNumber: string | null;
+        notificationNo: string | null;
     }>({
         loading: false,
         success: false,
         error: null,
         caseNumber: null,
+        notificationNo: null,
     });
 
     const handleChange = (field: string, value: string) => {
@@ -106,15 +96,7 @@ export default function ClaimForm() {
     };
 
     const validateForm = (): boolean => {
-        const dataToValidate = {
-            ...values,
-            province: location.selectedProvince,
-            district: location.selectedDistrict,
-            subdistrict: location.selectedSubdistrict,
-            zipcode: location.zipcode,
-        };
-
-        const result = marineClSchema.safeParse(dataToValidate);
+        const result = marineClSchema.safeParse({ ...values });
         if (result.success) {
             setErrors({});
             return true;
@@ -138,22 +120,6 @@ export default function ClaimForm() {
         return false;
     };
 
-    const buildFullAddress = (): string => {
-        const placePart = values.lossPlace === '007' ? (values.lossPlaceOther || '') : values.lossPlace;
-        const parts = [placePart];
-
-        const subdistrictItem = location.subdistricts.find((s) => s.id === location.selectedSubdistrict);
-        const districtItem = location.districts.find((d) => d.id === location.selectedDistrict);
-        const provinceItem = location.provinces.find((p) => p.id === location.selectedProvince);
-
-        if (subdistrictItem) parts.push(subdistrictItem.text);
-        if (districtItem) parts.push(districtItem.text);
-        if (provinceItem) parts.push(provinceItem.text);
-        if (location.zipcode) parts.push(location.zipcode);
-
-        return parts.filter(Boolean).join(' ');
-    };
-
     const handleSubmit = async (e: React.SyntheticEvent<HTMLFormElement>) => {
         e.preventDefault();
 
@@ -165,49 +131,55 @@ export default function ClaimForm() {
             return;
         }
 
-        setSubmitState({ loading: true, success: false, error: null, caseNumber: null });
+        setSubmitState({ loading: true, success: false, error: null, caseNumber: null, notificationNo: null });
 
         try {
-            const fullAddress = buildFullAddress();
             const incidentDateTime = convertBEtoCE(values.incidentDateTime);
 
             const payload = {
                 policyNumber,
-                incidentDateTime,
-                lossPlace: fullAddress,
-                province: location.selectedProvince,
-                district: location.selectedDistrict,
-                subdistrict: location.selectedSubdistrict,
-                zipcode: location.zipcode,
-                carPlate: values.carPlate,
-                damageType: values.damageType,
                 notifierName: values.notifierName,
                 phone: values.phone,
                 email: values.email || undefined,
+                incidentDateTime,
+                lossPlace: values.lossPlace,
+                vehicleName: values.vehicleName,
+                vehiclePlate: values.vehiclePlate,
+                transportationType: values.transportationType,
+                damageType: values.damageType,
+                lossReserve: values.lossReserve ? parseFloat(values.lossReserve.replace(/,/g, '')) : undefined,
             };
 
-            const allFiles: File[] = [...docUpload.files.map((f) => f.file)];
+            const allFiles = [...docUpload.files.map((f) => f.file)];
 
-            if (USE_LOCAL_SAVE) {
-                const { saveClaimLocally } = await import('@/services/localSubmit');
-                await saveClaimLocally({ claimType: 'Marine_CL_Claim', data: payload, documentFiles: allFiles });
-                setSubmitState({ loading: false, success: true, error: null, caseNumber: 'LOCAL-SAVE-' + Date.now() });
-                return;
-            }
+            const formData = new FormData();
+            Object.entries(payload).forEach(([key, value]) => {
+                if (value !== undefined && value !== null) {
+                    formData.append(key, value as string);
+                }
+            });
+            allFiles.forEach((file) => formData.append('files', file));
 
-            const result = await submitClaim(payload, token);
+            const result = await submitClaim(formData, token);
 
             if (!result.caseId) {
                 throw new Error('ไม่ได้รับหมายเลขเคส');
             }
 
-            setSubmitState({ loading: false, success: true, error: null, caseNumber: result.caseNumber ?? null });
+            setSubmitState({
+                loading: false,
+                success: true,
+                error: null,
+                caseNumber: result.caseNumber ?? null,
+                notificationNo: result.notificationNo ?? null,
+            });
         } catch (error) {
             setSubmitState({
                 loading: false,
                 success: false,
                 error: error instanceof Error ? error.message : 'เกิดข้อผิดพลาดในการส่งข้อมูล',
                 caseNumber: null,
+                notificationNo: null,
             });
         }
     };
@@ -226,7 +198,7 @@ export default function ClaimForm() {
         const contactEmail = getContactEmail('marine_cl');
         return (
             <SuccessScreen
-                caseNumber={submitState.caseNumber ?? undefined}
+                notificationNo={submitState.notificationNo ?? undefined}
                 contactEmail={contactEmail}
                 onClose={closeWindow}
             />
@@ -246,7 +218,7 @@ export default function ClaimForm() {
             <div className="header-section">
                 <div className="header-logo">DHIPAYA INSURANCE</div>
                 <div style={{ fontSize: '0.95rem', marginTop: 5 }}>
-                    แจ้งเคลม Marine CL (สอบถามข้อมูลเพิ่มเติม กรุณาติดต่อ Call Center 1736)
+                    แจ้งเคลม Carrier Liability (สอบถามข้อมูลเพิ่มเติม กรุณาติดต่อ Call Center 1736)
                 </div>
             </div>
 
@@ -265,42 +237,22 @@ export default function ClaimForm() {
                         values={{
                             incidentDateTime: values.incidentDateTime,
                             lossPlace: values.lossPlace,
-                            lossPlaceOther: values.lossPlaceOther,
-                            carPlate: values.carPlate,
-                            damageDetails: values.damageDetails,
-                            damageDetailsOther: values.damageDetailsOther,
+                            vehicleName: values.vehicleName,
+                            vehiclePlate: values.vehiclePlate,
+                            transportationType: values.transportationType,
                             damageType: values.damageType,
+                            lossReserve: values.lossReserve,
                         }}
                         errors={{
                             incidentDateTime: errors.incidentDateTime,
                             lossPlace: errors.lossPlace,
-                            lossPlaceOther: errors.lossPlaceOther,
-                            province: errors.province,
-                            district: errors.district,
-                            subdistrict: errors.subdistrict,
-                            zipcode: errors.zipcode,
-                            carPlate: errors.carPlate,
-                            damageDetails: errors.damageDetails,
-                            damageDetailsOther: errors.damageDetailsOther,
+                            vehicleName: errors.vehicleName,
+                            vehiclePlate: errors.vehiclePlate,
+                            transportationType: errors.transportationType,
                             damageType: errors.damageType,
+                            lossReserve: errors.lossReserve,
                         }}
                         onChange={handleChange}
-                        provinces={location.provinces}
-                        districts={location.districts}
-                        subdistricts={location.subdistricts}
-                        selectedProvince={location.selectedProvince}
-                        selectedDistrict={location.selectedDistrict}
-                        selectedSubdistrict={location.selectedSubdistrict}
-                        zipcode={location.zipcode}
-                        loadingProvinces={location.loadingProvinces}
-                        loadingDistricts={location.loadingDistricts}
-                        loadingSubdistricts={location.loadingSubdistricts}
-                        zipcodeEditable={location.zipcodeEditable}
-                        onProvinceChange={location.setSelectedProvince}
-                        onDistrictChange={location.setSelectedDistrict}
-                        onSubdistrictChange={location.setSelectedSubdistrict}
-                        onZipcodeChange={location.setZipcode}
-                        fetchProvinces={location.fetchProvinces}
                     />
 
                     <PersonalDocumentUpload

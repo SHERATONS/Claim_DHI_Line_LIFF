@@ -4,17 +4,16 @@
  */
 
 import { useState } from 'react';
-import { useLiff } from '@/hooks';
+import { useLiff, useFileUpload } from '@/hooks';
 import { golfSchema } from '@/utils/validation';
 import { scrollToFirstError } from '@/utils/dom';
 import { convertBEtoCE } from './ClaimDetailsSection';
 import { LoadingOverlay, SuccessScreen, ErrorModal } from '@/components';
 import { submitClaim } from '@/services/api';
-import { getContactEmail, USE_LOCAL_SAVE } from '@/config';
-import { MARINE_PLACES } from '@/config/marinePlaces';
+import { getContactEmail } from '@/config';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faPaperPlane } from '@fortawesome/free-solid-svg-icons';
-import { InsuredInfoSection } from '@/components/features/claim';
+import { InsuredInfoSection, PersonalDocumentUpload } from '@/components/features/claim';
 import { ClaimDetailsSection } from './ClaimDetailsSection';
 
 // Placeholder policy data — will be replaced by Loxley API integration.
@@ -30,11 +29,9 @@ interface FormValues {
     email: string;
     incidentDateTime: string;
     lossPlace: string;
-    lossPlaceOther: string;
     Golfer: string;
-    damageDetails: string;
-    damageDetailsOther: string;
     damageType: string;
+    lossReserve: string;
 }
 
 interface FormErrors {
@@ -43,11 +40,9 @@ interface FormErrors {
     email?: string;
     incidentDateTime?: string;
     lossPlace?: string;
-    lossPlaceOther?: string;
     Golfer?: string;
-    damageDetails?: string;
-    damageDetailsOther?: string;
     damageType?: string;
+    lossReserve?: string;
 }
 
 export default function ClaimForm() {
@@ -64,24 +59,27 @@ export default function ClaimForm() {
         email: '',
         incidentDateTime: '',
         lossPlace: '',
-        lossPlaceOther: '',
         Golfer: '',
-        damageDetails: '',
-        damageDetailsOther: '',
         damageType: '',
+        lossReserve: '',
     });
     const [errors, setErrors] = useState<FormErrors>({});
+
+    const docUpload = useFileUpload({ maxFiles: 10, autoCompress: true });
+    const [docFileErrors, setDocFileErrors] = useState<string[]>([]);
 
     const [submitState, setSubmitState] = useState<{
         loading: boolean;
         success: boolean;
         error: string | null;
         caseNumber: string | null;
+        notificationNo: string | null;
     }>({
         loading: false,
         success: false,
         error: null,
         caseNumber: null,
+        notificationNo: null,
     });
 
     const handleChange = (field: string, value: string) => {
@@ -116,17 +114,6 @@ export default function ClaimForm() {
         return false;
     };
 
-    const buildFullAddress = (): string => {
-        const parts: string[] = [];
-        if (values.lossPlace === '007') {
-            if (values.lossPlaceOther) parts.push(values.lossPlaceOther);
-        } else {
-            const placeItem = MARINE_PLACES.find(p => p.value === values.lossPlace);
-            if (placeItem) parts.push(placeItem.label);
-        }
-        return parts.filter(Boolean).join(' ');
-    };
-
     const handleSubmit = async (e: React.SyntheticEvent<HTMLFormElement>) => {
         e.preventDefault();
 
@@ -138,48 +125,61 @@ export default function ClaimForm() {
             return;
         }
 
-        setSubmitState({ loading: true, success: false, error: null, caseNumber: null });
+        setSubmitState({ loading: true, success: false, error: null, caseNumber: null, notificationNo: null });
 
         try {
-            const fullAddress = buildFullAddress();
             const incidentDateTime = convertBEtoCE(values.incidentDateTime);
 
             const payload = {
                 policyNumber,
-                damageDetails: values.damageDetails,
-                incidentDateTime,
-                damageType: values.damageType,
-                lossPlace: fullAddress,
-                Golfer: values.Golfer,
                 notifierName: values.notifierName,
                 phone: values.phone,
                 email: values.email || undefined,
+                incidentDateTime,
+                lossPlace: values.lossPlace,
+                Golfer: values.Golfer,
+                damageType: values.damageType,
+                lossReserve: values.lossReserve ? parseFloat(values.lossReserve.replace(/,/g, '')) : undefined,
             };
 
-            const allFiles: File[] = [];
+            const allFiles = [...docUpload.files.map((f) => f.file)];
 
-            if (USE_LOCAL_SAVE) {
-                const { saveClaimLocally } = await import('@/services/localSubmit');
-                await saveClaimLocally({ claimType: 'Golf_Claim', data: payload, documentFiles: allFiles });
-                setSubmitState({ loading: false, success: true, error: null, caseNumber: 'LOCAL-SAVE-' + Date.now() });
-                return;
-            }
+            const formData = new FormData();
+            Object.entries(payload).forEach(([key, value]) => {
+                if (value !== undefined && value !== null) {
+                    formData.append(key, value as string);
+                }
+            });
+            allFiles.forEach((file) => formData.append('files', file));
 
-            const result = await submitClaim(payload, token);
+            const result = await submitClaim(formData, token);
 
             if (!result.caseId) {
                 throw new Error('ไม่ได้รับหมายเลขเคส');
             }
 
-            setSubmitState({ loading: false, success: true, error: null, caseNumber: result.caseNumber ?? null });
+            setSubmitState({
+                loading: false,
+                success: true,
+                error: null,
+                caseNumber: result.caseNumber ?? null,
+                notificationNo: result.notificationNo ?? null,
+            });
         } catch (error) {
             setSubmitState({
                 loading: false,
                 success: false,
                 error: error instanceof Error ? error.message : 'เกิดข้อผิดพลาดในการส่งข้อมูล',
                 caseNumber: null,
+                notificationNo: null,
             });
         }
+    };
+
+    const handleDocFilesAdd = async (newFiles: FileList | File[]) => {
+        const results = await docUpload.addFiles(newFiles);
+        const errs = results.filter((r) => !r.valid).map((r) => r.error ?? 'ไฟล์ไม่ถูกต้อง');
+        setDocFileErrors(errs.length > 0 ? errs : []);
     };
 
     const handleCloseError = () => {
@@ -190,7 +190,7 @@ export default function ClaimForm() {
         const contactEmail = getContactEmail('golf');
         return (
             <SuccessScreen
-                caseNumber={submitState.caseNumber ?? undefined}
+                notificationNo={submitState.notificationNo ?? undefined}
                 contactEmail={contactEmail}
                 onClose={closeWindow}
             />
@@ -210,7 +210,7 @@ export default function ClaimForm() {
             <div className="header-section">
                 <div className="header-logo">DHIPAYA INSURANCE</div>
                 <div style={{ fontSize: '0.95rem', marginTop: 5 }}>
-                    แจ้งเคลม Golf (สอบถามข้อมูลเพิ่มเติม กรุณาติดต่อ Call Center 1736)
+                    แจ้งเคลม การประกันภัยผู้เล่นกอล์ฟ (Golf) (สอบถามข้อมูลเพิ่มเติม กรุณาติดต่อ Call Center 1736)
                 </div>
             </div>
 
@@ -237,22 +237,33 @@ export default function ClaimForm() {
                         values={{
                             incidentDateTime: values.incidentDateTime,
                             lossPlace: values.lossPlace,
-                            lossPlaceOther: values.lossPlaceOther,
                             Golfer: values.Golfer,
-                            damageDetails: values.damageDetails,
-                            damageDetailsOther: values.damageDetailsOther,
                             damageType: values.damageType,
+                            lossReserve: values.lossReserve,
                         }}
                         errors={{
                             incidentDateTime: errors.incidentDateTime,
                             lossPlace: errors.lossPlace,
-                            lossPlaceOther: errors.lossPlaceOther,
                             Golfer: errors.Golfer,
-                            damageDetails: errors.damageDetails,
-                            damageDetailsOther: errors.damageDetailsOther,
                             damageType: errors.damageType,
+                            lossReserve: errors.lossReserve,
                         }}
                         onChange={handleChange}
+                    />
+
+                    <PersonalDocumentUpload
+                        files={docUpload.files}
+                        onFilesAdd={handleDocFilesAdd}
+                        onFileRemove={docUpload.removeFile}
+                        canAddMore={docUpload.canAddMore}
+                        maxFiles={10}
+                        errors={docFileErrors}
+                        instructions={[
+                            '- รูปถ่ายสนามกอล์ฟที่เกิดเหตุ',
+                            '- รูปถ่ายอุปกรณ์ที่เสียหาย (ไม้กอล์ฟ, ถุงกอล์ฟ ฯลฯ)',
+                            '- ใบเสร็จรับเงินค่ารักษาพยาบาล (กรณีบาดเจ็บ)',
+                            '- บันทึกประจำวันของสนามกอล์ฟ (ถ้ามี)',
+                        ]}
                     />
 
                     <button type="submit" className="btn-submit" disabled={submitState.loading}>

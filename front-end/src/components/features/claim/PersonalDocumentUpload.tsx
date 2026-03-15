@@ -11,7 +11,7 @@ export function PersonalDocumentUpload({
     ...props
 }: PersonalDocumentUploadProps) {
     return (
-        <Card title="เอกสารประกอบการพิจารณา - เอกสารส่วนตัว" icon={faFileAlt}>
+        <Card title="เอกสาร/รูปภาพประกอบการพิจารณา" icon={faFileAlt}>
             <div className="mb-3">
                 <ul className="mb-0 ps-3 list-unstyled">
                     {instructions?.map((item, index) => (

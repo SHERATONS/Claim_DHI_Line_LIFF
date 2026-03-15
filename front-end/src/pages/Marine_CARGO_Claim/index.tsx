@@ -10,8 +10,7 @@ import { scrollToFirstError } from '@/utils/dom';
 import { convertBEtoCE } from './ClaimDetailsSection';
 import { LoadingOverlay, SuccessScreen, ErrorModal } from '@/components';
 import { submitClaim } from '@/services/api';
-import { getContactEmail, USE_LOCAL_SAVE } from '@/config';
-import { MARINE_PLACES } from '@/config/marinePlaces';
+import { getContactEmail } from '@/config';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faPaperPlane } from '@fortawesome/free-solid-svg-icons';
 import { InsuredInfoSection, PersonalDocumentUpload } from '@/components/features/claim';
@@ -28,26 +27,26 @@ interface FormValues {
     notifierName: string;
     phone: string;
     email: string;
-    vehicleName: string;
-    damageDetails: string;
-    damageType: string;
-    transportationType: string;
     incidentDateTime: string;
     lossPlace: string;
-    lossPlaceOther?: string;
+    vehicleName: string;
+    vehiclePlate: string;
+    transportationType: string;
+    damageType: string;
+    lossReserve: string;
 }
 
 interface FormErrors {
     notifierName?: string;
     phone?: string;
     email?: string;
-    vehicleName?: string;
-    damageDetails?: string;
-    damageType?: string;
-    transportationType?: string;
     incidentDateTime?: string;
     lossPlace?: string;
-    lossPlaceOther?: string;
+    vehicleName?: string;
+    vehiclePlate?: string;
+    transportationType?: string;
+    damageType?: string;
+    lossReserve?: string;
 }
 
 export default function ClaimForm() {
@@ -62,12 +61,13 @@ export default function ClaimForm() {
         notifierName: '',
         phone: '',
         email: '',
-        vehicleName: '',
-        damageDetails: '',
-        damageType: '',
-        transportationType: '',
         incidentDateTime: '',
         lossPlace: '',
+        vehicleName: '',
+        vehiclePlate: '',
+        transportationType: '',
+        damageType: '',
+        lossReserve: '',
     });
     const [errors, setErrors] = useState<FormErrors>({});
 
@@ -79,11 +79,13 @@ export default function ClaimForm() {
         success: boolean;
         error: string | null;
         caseNumber: string | null;
+        notificationNo: string | null;
     }>({
         loading: false,
         success: false,
         error: null,
         caseNumber: null,
+        notificationNo: null,
     });
 
     const handleChange = (field: string, value: string) => {
@@ -118,17 +120,6 @@ export default function ClaimForm() {
         return false;
     };
 
-    const buildFullAddress = (): string => {
-        const parts: string[] = [];
-        if (values.lossPlace === '007') {
-            if (values.lossPlaceOther) parts.push(values.lossPlaceOther);
-        } else {
-            const placeItem = MARINE_PLACES.find(p => p.value === values.lossPlace);
-            if (placeItem) parts.push(placeItem.label);
-        }
-        return parts.filter(Boolean).join(' ');
-    };
-
     const handleSubmit = async (e: React.SyntheticEvent<HTMLFormElement>) => {
         e.preventDefault();
 
@@ -140,47 +131,55 @@ export default function ClaimForm() {
             return;
         }
 
-        setSubmitState({ loading: true, success: false, error: null, caseNumber: null });
+        setSubmitState({ loading: true, success: false, error: null, caseNumber: null, notificationNo: null });
 
         try {
-            const fullAddress = buildFullAddress();
             const incidentDateTime = convertBEtoCE(values.incidentDateTime);
 
             const payload = {
                 policyNumber,
-                incidentDateTime,
-                damageType: values.damageType,
-                lossPlace: fullAddress,
-                vehicleName: values.vehicleName,
-                damageDetails: values.damageDetails,
-                transportationType: values.transportationType,
                 notifierName: values.notifierName,
                 phone: values.phone,
                 email: values.email || undefined,
+                incidentDateTime,
+                lossPlace: values.lossPlace,
+                vehicleName: values.vehicleName,
+                vehiclePlate: values.vehiclePlate,
+                transportationType: values.transportationType,
+                damageType: values.damageType,
+                lossReserve: values.lossReserve ? parseFloat(values.lossReserve.replace(/,/g, '')) : undefined,
             };
 
-            const allFiles: File[] = [...docUpload.files.map((f) => f.file)];
+            const allFiles = [...docUpload.files.map((f) => f.file)];
 
-            if (USE_LOCAL_SAVE) {
-                const { saveClaimLocally } = await import('@/services/localSubmit');
-                await saveClaimLocally({ claimType: 'Marine_CARGO_Claim', data: payload, documentFiles: allFiles });
-                setSubmitState({ loading: false, success: true, error: null, caseNumber: 'LOCAL-SAVE-' + Date.now() });
-                return;
-            }
+            const formData = new FormData();
+            Object.entries(payload).forEach(([key, value]) => {
+                if (value !== undefined && value !== null) {
+                    formData.append(key, value as string);
+                }
+            });
+            allFiles.forEach((file) => formData.append('files', file));
 
-            const result = await submitClaim(payload, token);
+            const result = await submitClaim(formData, token);
 
             if (!result.caseId) {
                 throw new Error('ไม่ได้รับหมายเลขเคส');
             }
 
-            setSubmitState({ loading: false, success: true, error: null, caseNumber: result.caseNumber ?? null });
+            setSubmitState({
+                loading: false,
+                success: true,
+                error: null,
+                caseNumber: result.caseNumber ?? null,
+                notificationNo: result.notificationNo ?? null,
+            });
         } catch (error) {
             setSubmitState({
                 loading: false,
                 success: false,
                 error: error instanceof Error ? error.message : 'เกิดข้อผิดพลาดในการส่งข้อมูล',
                 caseNumber: null,
+                notificationNo: null,
             });
         }
     };
@@ -199,7 +198,7 @@ export default function ClaimForm() {
         const contactEmail = getContactEmail('marine_cargo');
         return (
             <SuccessScreen
-                caseNumber={submitState.caseNumber ?? undefined}
+                notificationNo={submitState.notificationNo ?? undefined}
                 contactEmail={contactEmail}
                 onClose={closeWindow}
             />
@@ -219,7 +218,7 @@ export default function ClaimForm() {
             <div className="header-section">
                 <div className="header-logo">DHIPAYA INSURANCE</div>
                 <div style={{ fontSize: '0.95rem', marginTop: 5 }}>
-                    แจ้งเคลม Marine Cargo (สอบถามข้อมูลเพิ่มเติม กรุณาติดต่อ Call Center 1736)
+                    แจ้งเคลม Cargo (สอบถามข้อมูลเพิ่มเติม กรุณาติดต่อ Call Center 1736)
                 </div>
             </div>
 
@@ -238,20 +237,20 @@ export default function ClaimForm() {
                         values={{
                             incidentDateTime: values.incidentDateTime,
                             lossPlace: values.lossPlace,
-                            lossPlaceOther: values.lossPlaceOther,
                             vehicleName: values.vehicleName,
-                            damageDetails: values.damageDetails,
-                            damageType: values.damageType,
+                            vehiclePlate: values.vehiclePlate,
                             transportationType: values.transportationType,
+                            damageType: values.damageType,
+                            lossReserve: values.lossReserve,
                         }}
                         errors={{
                             incidentDateTime: errors.incidentDateTime,
                             lossPlace: errors.lossPlace,
-                            lossPlaceOther: errors.lossPlaceOther,
                             vehicleName: errors.vehicleName,
-                            damageDetails: errors.damageDetails,
-                            damageType: errors.damageType,
+                            vehiclePlate: errors.vehiclePlate,
                             transportationType: errors.transportationType,
+                            damageType: errors.damageType,
+                            lossReserve: errors.lossReserve,
                         }}
                         onChange={handleChange}
                     />
@@ -264,10 +263,7 @@ export default function ClaimForm() {
                         maxFiles={10}
                         errors={docFileErrors}
                         instructions={[
-                            '- ใบรับแจ้ง (FM-19-02-01)',
-                            '- ภาพถ่ายของสินค้าที่เสียหาย',
-                            '- หนังสือเรียกร้องค่าสินไหมไปยังผู้ขนส่ง',
-                            '- เอกสารประกอบเพิ่มเติมอื่นๆ ซึ่งจะแจ้งขอเป็นกรณีไป',
+                            
                         ]}
                     />
 

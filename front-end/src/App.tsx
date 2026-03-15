@@ -11,6 +11,7 @@ import Pet_Claim from '@/pages/Pet_Claim';
 import Golf_Claim from '@/pages/Golf_Claim';
 import TA_Claim from '@/pages/TA_Claim';
 import AH_Death_Claim from '@/pages/AH_Death_Claim';
+import Other_Claim from '@/pages/Other_Claim';
 import NotFound from '@/pages/NotFound';
 
 function AppContent() {
@@ -42,6 +43,7 @@ function AppContent() {
       <Route path="/GOLFClaim" element={<Golf_Claim />} />
       <Route path="/TAClaim" element={<TA_Claim />} />
       <Route path="/AHClaim" element={<AH_Death_Claim />} />
+      <Route path="/OTHERClaim" element={<Other_Claim />} />
       <Route path="/404" element={<NotFound />} />
       <Route path="*" element={<Navigate to="/404" replace />} />
     </Routes>

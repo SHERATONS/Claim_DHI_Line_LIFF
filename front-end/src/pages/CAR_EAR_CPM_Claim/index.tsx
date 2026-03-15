@@ -4,16 +4,16 @@
  */
 
 import { useState } from 'react';
-import { useLiff, useLocationCascade } from '@/hooks';
+import { useLiff, useLocationCascade, useFileUpload } from '@/hooks';
 import { carEarCpmSchema } from '@/utils/validation';
 import { scrollToFirstError } from '@/utils/dom';
 import { convertBEtoCE } from './ClaimDetailsSection';
 import { LoadingOverlay, SuccessScreen, ErrorModal } from '@/components';
 import { submitClaim } from '@/services/api';
-import { getContactEmail, USE_LOCAL_SAVE } from '@/config';
+import { getContactEmail } from '@/config';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faPaperPlane } from '@fortawesome/free-solid-svg-icons';
-import { InsuredInfoSection } from '@/components/features/claim';
+import { InsuredInfoSection, PersonalDocumentUpload } from '@/components/features/claim';
 import { ClaimDetailsSection } from './ClaimDetailsSection';
 
 // Placeholder policy data — will be replaced by Loxley API integration.
@@ -31,8 +31,8 @@ interface FormValues {
     lossPlace: string;
     projectTitle: string;
     contractorName: string;
-    damageDetails: string;
     damageType: string;
+    lossReserve: string;
 }
 
 interface FormErrors {
@@ -47,8 +47,8 @@ interface FormErrors {
     zipcode?: string;
     projectTitle?: string;
     contractorName?: string;
-    damageDetails?: string;
     damageType?: string;
+    lossReserve?: string;
 }
 
 export default function ClaimForm() {
@@ -67,10 +67,13 @@ export default function ClaimForm() {
         lossPlace: '',
         projectTitle: '',
         contractorName: '',
-        damageDetails: '',
         damageType: '',
+        lossReserve: '',
     });
     const [errors, setErrors] = useState<FormErrors>({});
+
+    const docUpload = useFileUpload({ maxFiles: 10, autoCompress: true });
+    const [docFileErrors, setDocFileErrors] = useState<string[]>([]);
 
     const location = useLocationCascade();
 
@@ -79,11 +82,13 @@ export default function ClaimForm() {
         success: boolean;
         error: string | null;
         caseNumber: string | null;
+        notificationNo: string | null;
     }>({
         loading: false,
         success: false,
         error: null,
         caseNumber: null,
+        notificationNo: null,
     });
 
     const handleChange = (field: string, value: string) => {
@@ -147,7 +152,7 @@ export default function ClaimForm() {
             return;
         }
 
-        setSubmitState({ loading: true, success: false, error: null, caseNumber: null });
+        setSubmitState({ loading: true, success: false, error: null, caseNumber: null, notificationNo: null });
 
         try {
             const fullAddress = buildFullAddress();
@@ -155,8 +160,10 @@ export default function ClaimForm() {
 
             const payload = {
                 policyNumber,
+                notifierName: values.notifierName,
+                phone: values.phone,
+                email: values.email || undefined,
                 incidentDateTime,
-                damageType: values.damageType,
                 lossPlace: values.lossPlace,
                 fullAddress,
                 provinceId: location.selectedProvince,
@@ -165,36 +172,48 @@ export default function ClaimForm() {
                 zipcode: location.zipcode,
                 projectTitle: values.projectTitle,
                 contractorName: values.contractorName,
-                damageDetails: values.damageDetails,
-                notifierName: values.notifierName,
-                phone: values.phone,
-                email: values.email || undefined,
+                damageType: values.damageType,
+                lossReserve: values.lossReserve ? parseFloat(values.lossReserve.replace(/,/g, '')) : undefined,
             };
 
-            const allFiles: File[] = [];
+            const allFiles = [...docUpload.files.map((f) => f.file)];
 
-            if (USE_LOCAL_SAVE) {
-                const { saveClaimLocally } = await import('@/services/localSubmit');
-                await saveClaimLocally({ claimType: 'CAR_EAR_CPM_Claim', data: payload, documentFiles: allFiles });
-                setSubmitState({ loading: false, success: true, error: null, caseNumber: 'LOCAL-SAVE-' + Date.now() });
-                return;
-            }
+            const formData = new FormData();
+            Object.entries(payload).forEach(([key, value]) => {
+                if (value !== undefined && value !== null) {
+                    formData.append(key, value as string);
+                }
+            });
+            allFiles.forEach((file) => formData.append('files', file));
 
-            const result = await submitClaim(payload, token);
+            const result = await submitClaim(formData, token);
 
             if (!result.caseId) {
                 throw new Error('ไม่ได้รับหมายเลขเคส');
             }
 
-            setSubmitState({ loading: false, success: true, error: null, caseNumber: result.caseNumber ?? null });
+            setSubmitState({
+                loading: false,
+                success: true,
+                error: null,
+                caseNumber: result.caseNumber ?? null,
+                notificationNo: result.notificationNo ?? null,
+            });
         } catch (error) {
             setSubmitState({
                 loading: false,
                 success: false,
                 error: error instanceof Error ? error.message : 'เกิดข้อผิดพลาดในการส่งข้อมูล',
                 caseNumber: null,
+                notificationNo: null,
             });
         }
+    };
+
+    const handleDocFilesAdd = async (newFiles: FileList | File[]) => {
+        const results = await docUpload.addFiles(newFiles);
+        const errs = results.filter((r) => !r.valid).map((r) => r.error ?? 'ไฟล์ไม่ถูกต้อง');
+        setDocFileErrors(errs.length > 0 ? errs : []);
     };
 
     const handleCloseError = () => {
@@ -205,7 +224,7 @@ export default function ClaimForm() {
         const contactEmail = getContactEmail('car_ear_cpm');
         return (
             <SuccessScreen
-                caseNumber={submitState.caseNumber ?? undefined}
+                notificationNo={submitState.notificationNo ?? undefined}
                 contactEmail={contactEmail}
                 onClose={closeWindow}
             />
@@ -225,7 +244,7 @@ export default function ClaimForm() {
             <div className="header-section">
                 <div className="header-logo">DHIPAYA INSURANCE</div>
                 <div style={{ fontSize: '0.95rem', marginTop: 5 }}>
-                    แจ้งเคลม CAR-EAR CMP (สอบถามข้อมูลเพิ่มเติม กรุณาติดต่อ Call Center 1736)
+                    แจ้งเคลม CAR-EAR CPM (สอบถามข้อมูลเพิ่มเติม กรุณาติดต่อ Call Center 1736)
                 </div>
             </div>
 
@@ -254,8 +273,8 @@ export default function ClaimForm() {
                             lossPlace: values.lossPlace,
                             projectTitle: values.projectTitle,
                             contractorName: values.contractorName,
-                            damageDetails: values.damageDetails,
                             damageType: values.damageType,
+                            lossReserve: values.lossReserve,
                         }}
                         errors={{
                             incidentDateTime: errors.incidentDateTime,
@@ -266,8 +285,8 @@ export default function ClaimForm() {
                             zipcode: errors.zipcode,
                             projectTitle: errors.projectTitle,
                             contractorName: errors.contractorName,
-                            damageDetails: errors.damageDetails,
                             damageType: errors.damageType,
+                            lossReserve: errors.lossReserve,
                         }}
                         onChange={handleChange}
                         provinces={location.provinces}
@@ -286,6 +305,22 @@ export default function ClaimForm() {
                         onSubdistrictChange={location.setSelectedSubdistrict}
                         onZipcodeChange={location.setZipcode}
                         fetchProvinces={location.fetchProvinces}
+                    />
+
+                    <PersonalDocumentUpload
+                        files={docUpload.files}
+                        onFilesAdd={handleDocFilesAdd}
+                        onFileRemove={docUpload.removeFile}
+                        canAddMore={docUpload.canAddMore}
+                        maxFiles={10}
+                        errors={docFileErrors}
+                        instructions={[
+                            '- รูปถ่ายทรัพย์สิน/โครงการที่เกิดเหตุ',
+                            '- รูปถ่ายความเสียหายที่เกิดขึ้น',
+                            '- สำเนาใบรับรองการก่อสร้าง (ถ้ามี)',
+                            '- ประมาณการค่าซ่อมแซม/ใบเสนอราคา (ถ้ามี)',
+                            '- บันทึกประจำวันของตำรวจ (กรณีโดนขโมยหรือเจตนาประทุษร้าย)',
+                        ]}
                     />
 
                     <button type="submit" className="btn-submit" disabled={submitState.loading}>

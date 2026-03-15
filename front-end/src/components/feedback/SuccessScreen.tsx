@@ -3,12 +3,12 @@ import { faCheckCircle } from '@fortawesome/free-solid-svg-icons';
 
 interface SuccessScreenProps {
   show?: boolean;
-  caseNumber?: string;
+  notificationNo?: string;
   contactEmail?: string;
   onClose: () => void;
 }
 
-export function SuccessScreen({ show = true, caseNumber, contactEmail, onClose }: SuccessScreenProps) {
+export function SuccessScreen({ show = true, notificationNo, contactEmail, onClose }: SuccessScreenProps) {
   if (!show) return null;
 
   return (
@@ -26,7 +26,7 @@ export function SuccessScreen({ show = true, caseNumber, contactEmail, onClose }
           ส่งข้อมูลสำเร็จ!
         </h2>
         <div className="success-case">
-          เลขที่รับแจ้ง: {caseNumber || '-'}
+          เลขที่รับแจ้ง: {notificationNo || '-'}
         </div>
         <p className="success-message">
           บริษัทฯ ได้รับข้อมูลของท่านแล้ว

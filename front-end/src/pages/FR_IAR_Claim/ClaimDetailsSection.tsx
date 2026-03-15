@@ -5,24 +5,23 @@
 
 import { useEffect } from 'react';
 import { Card, Input, Select } from '@/components/ui';
-import { CAUSE_OF_LOSS_OPTIONS } from '@/config/causeOfLoss';
 import type { LocationItem } from '@/hooks';
 
 interface ClaimDetailsSectionProps {
   values: {
-    causeOfLoss: string;
     incidentDateTime: string;
     lossPlace: string;
+    damageType: string;
     lossReserve: string;
   };
   errors: {
-    causeOfLoss?: string;
     incidentDateTime?: string;
     lossPlace?: string;
     province?: string;
     district?: string;
     subdistrict?: string;
     zipcode?: string;
+    damageType?: string;
     lossReserve?: string;
   };
   onChange: (field: string, value: string) => void;
@@ -58,7 +57,7 @@ export function convertBEtoCE(dateTimeValue: string): string {
     year -= 543;
   }
 
-  return `${year}-${dateParts[1]}-${dateParts[2]} ${parts[1]}`;
+  return `${year}-${dateParts[1]}-${dateParts[2]}T${parts[1]}`;
 }
 
 export function ClaimDetailsSection({
@@ -95,36 +94,18 @@ export function ClaimDetailsSection({
 
   return (
     <Card title="รายละเอียดเคลม">
-      <Select
-        id="causeOfLoss"
-        label="ประเภทภัย/สาเหตุ"
-        options={CAUSE_OF_LOSS_OPTIONS.map((c) => ({ value: c.value, label: c.label }))}
-        value={values.causeOfLoss}
-        onChange={(e) => onChange('causeOfLoss', e.target.value)}
-        error={errors.causeOfLoss}
+      <Input
+        id="incidentDateTime"
+        label="วันที่/เวลาเกิดเหตุ"
+        type="datetime-local"
+        value={values.incidentDateTime}
+        onChange={(e) => {
+          const val = e.target.value;
+          onChange('incidentDateTime', val);
+        }}
+        error={errors.incidentDateTime}
         required
-        placeholder="- เลือกประเภทภัย -"
       />
-
-      <div className="mb-3">
-        <label htmlFor="incidentDateTime" className="form-label">
-          วันที่/เวลาเกิดเหตุ
-          <span className="required"> *</span>
-        </label>
-        <input
-          type="datetime-local"
-          id="incidentDateTime"
-          className={`form-control ${errors.incidentDateTime ? 'is-invalid' : ''}`}
-          value={values.incidentDateTime}
-          onChange={(e) => onChange('incidentDateTime', e.target.value)}
-          aria-invalid={!!errors.incidentDateTime}
-        />
-        {errors.incidentDateTime && (
-          <div className="invalid-feedback" role="alert">
-            {errors.incidentDateTime}
-          </div>
-        )}
-      </div>
 
       <Input
         id="lossPlace"
@@ -184,6 +165,16 @@ export function ClaimDetailsSection({
         required
         placeholder="รหัสไปรษณีย์"
       />
+
+      <Input
+        id="damageType"
+        label="รายละเอียดของความเสียหายเพิ่มเติม"
+        value={values.damageType}
+        onChange={(e) => onChange('damageType', e.target.value)}
+        error={errors.damageType}
+        required
+        placeholder="- ระบุรายละเอียดของความเสียหายเพิ่มเติม -"
+        />
 
       <Input
         id="lossReserve"

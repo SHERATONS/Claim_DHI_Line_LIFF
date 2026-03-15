@@ -10,10 +10,10 @@ import { scrollToFirstError } from '@/utils/dom';
 import { convertBEtoCE } from './ClaimDetailsSection';
 import { LoadingOverlay, SuccessScreen, ErrorModal } from '@/components';
 import { submitClaim } from '@/services/api';
-import { getContactEmail, USE_LOCAL_SAVE } from '@/config';
+import { getContactEmail } from '@/config';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faPaperPlane } from '@fortawesome/free-solid-svg-icons';
-import { InsuredInfoSection, DamageImageUpload, PersonalDocumentUpload } from '@/components/features/claim';
+import { InsuredInfoSection, PersonalDocumentUpload } from '@/components/features/claim';
 import { ClaimDetailsSection } from './ClaimDetailsSection';
 
 // Placeholder policy data — will be replaced by Loxley API integration.
@@ -27,9 +27,9 @@ interface FormValues {
   notifierName: string;
   phone: string;
   email: string;
-  causeOfLoss: string;
   incidentDateTime: string;
   lossPlace: string;
+  damageType: string;
   lossReserve: string;
 }
 
@@ -37,13 +37,13 @@ interface FormErrors {
   notifierName?: string;
   phone?: string;
   email?: string;
-  causeOfLoss?: string;
   incidentDateTime?: string;
   lossPlace?: string;
   province?: string;
   district?: string;
   subdistrict?: string;
   zipcode?: string;
+  damageType?: string;
   lossReserve?: string;
 }
 
@@ -58,9 +58,9 @@ export default function ClaimForm() {
     notifierName: '',
     phone: '',
     email: '',
-    causeOfLoss: '',
     incidentDateTime: '',
     lossPlace: '',
+    damageType: '',
     lossReserve: '',
   });
   const [errors, setErrors] = useState<FormErrors>({});
@@ -79,9 +79,7 @@ export default function ClaimForm() {
 
   const location = useLocationCascade();
 
-  const damageUpload = useFileUpload({ maxFiles: 10, autoCompress: true, filePrefix: 'image' });
   const docUpload = useFileUpload({ maxFiles: 10, autoCompress: true, filePrefix: 'document' });
-  const [damageFileErrors, setDamageFileErrors] = useState<string[]>([]);
   const [docFileErrors, setDocFileErrors] = useState<string[]>([]);
 
   const [submitState, setSubmitState] = useState<{
@@ -89,8 +87,10 @@ export default function ClaimForm() {
     success: boolean;
     error: string | null;
     caseNumber: string | null;
+    notificationNo: string | null;
     uploadWarning: string | null;
   }>({
+    notificationNo: null,
     loading: false,
     success: false,
     error: null,
@@ -153,50 +153,10 @@ export default function ClaimForm() {
     const fullAddress = buildFullAddress();
     const incidentDateTime = convertBEtoCE(values.incidentDateTime);
 
-    const payload = {
-      policyNo: policyNumber,
-      contactId: idcard,
-      notifierName: values.notifierName,
-      phone: values.phone,
-      email: values.email || undefined,
-      incidentDateTime,
-      lossPlace: values.lossPlace,
-      fullAddress,
-      provinceId: location.selectedProvince,
-      districtId: location.selectedDistrict,
-      subdistrictId: location.selectedSubdistrict,
-      zipcode: location.zipcode,
-      lossReserve: values.lossReserve || undefined,
-      causeOfLoss: values.causeOfLoss,
-    };
-
     const allFiles = [
-      ...damageUpload.files.map((f) => f.file),
       ...docUpload.files.map((f) => f.file),
     ];
 
-    // Local save bypasses backend + Salesforce entirely — useful for UI testing.
-    if (USE_LOCAL_SAVE) {
-      setSubmitState({ loading: true, success: false, error: null, caseNumber: null, uploadWarning: null });
-      try {
-        const { saveClaimLocally } = await import('@/services/localSubmit');
-        await saveClaimLocally({ claimType: 'FR_IAR_Claim', data: payload, documentFiles: allFiles });
-        setSubmitState({
-          loading: false, success: true, error: null,
-          caseNumber: 'LOCAL-SAVE-' + Date.now(), uploadWarning: null,
-        });
-      } catch (error) {
-        setSubmitState({
-          loading: false, success: false,
-          error: error instanceof Error ? error.message : 'เกิดข้อผิดพลาดในการบันทึกข้อมูล',
-          caseNumber: null, uploadWarning: null,
-        });
-      }
-      return;
-    }
-
-    // In DEV mode without LIFF, fall back to a dummy token.
-    // The backend must have SKIP_LIFF_AUTH=true for this to work.
     const token = getAccessToken() ?? (import.meta.env.DEV ? 'dev-bypass' : null);
     if (!token) {
       setSubmitState((s) => ({
@@ -206,9 +166,27 @@ export default function ClaimForm() {
       return;
     }
 
-    setSubmitState({ loading: true, success: false, error: null, caseNumber: null, uploadWarning: null });
+    setSubmitState({ loading: true, success: false, error: null, caseNumber: null, notificationNo: null, uploadWarning: null });
 
     try {
+      const payload = {
+        policyNo: policyNumber,
+        contactId: idcard,
+        notifierName: values.notifierName,
+        phone: values.phone,
+        email: values.email || undefined,
+        incidentDateTime,
+        lossPlace: values.lossPlace,
+        fullAddress,
+        provinceId: location.selectedProvince,
+        districtId: location.selectedDistrict,
+        subdistrictId: location.selectedSubdistrict,
+        zipcode: location.zipcode,
+        damageType: values.damageType,
+        lossReserve: values.lossReserve || undefined,
+        causeOfLoss: '974', // Default for FR-IAR if dropdown removed
+      };
+
       const formData = new FormData();
       Object.entries(payload).forEach(([key, value]) => {
         if (value !== undefined && value !== null) {
@@ -224,14 +202,16 @@ export default function ClaimForm() {
       }
 
       setSubmitState({
+        caseNumber: result.caseNumber ?? null,
         loading: false,
         success: true,
         error: null,
-        caseNumber: result.caseNumber ?? null,
+        notificationNo: result.notificationNo ?? null,
         uploadWarning: result.error ?? null,
       });
     } catch (error) {
       setSubmitState({
+        notificationNo: null,
         loading: false,
         success: false,
         error: error instanceof Error ? error.message : 'เกิดข้อผิดพลาดในการส่งข้อมูล',
@@ -241,12 +221,6 @@ export default function ClaimForm() {
     }
   };
 
-  const handleDamageFilesAdd = async (newFiles: FileList | File[]) => {
-    const results = await damageUpload.addFiles(newFiles);
-    const errs = results.filter((r) => !r.valid).map((r) => r.error ?? 'ไฟล์ไม่ถูกต้อง');
-    setDamageFileErrors(errs.length > 0 ? errs : []);
-  };
-
   const handleDocFilesAdd = async (newFiles: FileList | File[]) => {
     const results = await docUpload.addFiles(newFiles);
     const errs = results.filter((r) => !r.valid).map((r) => r.error ?? 'ไฟล์ไม่ถูกต้อง');
@@ -254,10 +228,10 @@ export default function ClaimForm() {
   };
 
   if (submitState.success) {
-    const contactEmail = getContactEmail(values.causeOfLoss);
+    const contactEmail = getContactEmail('974'); // Default flood
     return (
       <SuccessScreen
-        caseNumber={submitState.caseNumber ?? undefined}
+        notificationNo={submitState.notificationNo ?? undefined}
         contactEmail={contactEmail}
         onClose={closeWindow}
       />
@@ -277,7 +251,7 @@ export default function ClaimForm() {
       <div className="header-section">
         <div className="header-logo">DHIPAYA INSURANCE</div>
         <div style={{ fontSize: '0.95rem', marginTop: 5 }}>
-          แจ้งเคลมน้ำท่วม (สอบถามข้อมูลเพิ่มเติม กรุณาติดต่อ Call Center 1736)
+          แจ้งเคลม การประกันภัยอัคคีภัย (FIR) และ การประกันภัยความเสี่ยงภัยทรัพย์สิน (IAR) (สอบถามข้อมูลเพิ่มเติม กรุณาติดต่อ Call Center 1736)
         </div>
       </div>
 
@@ -294,19 +268,19 @@ export default function ClaimForm() {
 
           <ClaimDetailsSection
             values={{
-              causeOfLoss: values.causeOfLoss,
               incidentDateTime: values.incidentDateTime,
               lossPlace: values.lossPlace,
+              damageType: values.damageType,
               lossReserve: values.lossReserve,
             }}
             errors={{
-              causeOfLoss: errors.causeOfLoss,
               incidentDateTime: errors.incidentDateTime,
               lossPlace: errors.lossPlace,
               province: errors.province,
               district: errors.district,
               subdistrict: errors.subdistrict,
               zipcode: errors.zipcode,
+              damageType: errors.damageType,
               lossReserve: errors.lossReserve,
             }}
             onChange={handleChange}
@@ -328,21 +302,6 @@ export default function ClaimForm() {
             fetchProvinces={location.fetchProvinces}
           />
 
-          <DamageImageUpload
-            files={damageUpload.files}
-            onFilesAdd={handleDamageFilesAdd}
-            onFileRemove={damageUpload.removeFile}
-            canAddMore={damageUpload.canAddMore}
-            maxFiles={10}
-            errors={damageFileErrors}
-            instructions={[
-              '1. อัพโหลดรูปความเสียหาย',
-              '- ภาพถ่ายให้เห็นระดับน้ำที่ท่วมบริเวณบ้าน',
-              '- ภาพถ่ายให้เห็นความเสียหายของสิ่งของภายในบ้าน',
-              '- ภาพถ่ายผู้เอาประกันภัยที่แสดงให้เห็นบ้านเลขที่ของบ้านที่ถูกน้ำท่วม',
-            ]}
-          />
-
           <PersonalDocumentUpload
             files={docUpload.files}
             onFilesAdd={handleDocFilesAdd}
@@ -356,6 +315,10 @@ export default function ClaimForm() {
               '- สำเนากรมธรรม์',
               '- สำเนาบัญชีธนาคาร',
               '2. ใบประเมินราคาซ่อม (ถ้ามี)',
+              '3. อัพโหลดรูปความเสียหาย',
+              '- ภาพถ่ายให้เห็นระดับน้ำที่ท่วมบริเวณบ้าน',
+              '- ภาพถ่ายให้เห็นความเสียหายของสิ่งของภายในบ้าน',
+              '- ภาพถ่ายผู้เอาประกันภัยที่แสดงให้เห็นบ้านเลขที่ของบ้านที่ถูกน้ำท่วม',
             ]}
           />
 

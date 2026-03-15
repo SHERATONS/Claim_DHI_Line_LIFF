@@ -1,27 +1,25 @@
 /**
- * Claim Form Page (Pet)
- * Adapted from Drone_Claim
+ * Claim Form Page (Marine HULL)
+ * Adapted from FR_IAR_Claim
  */
 
 import { useState } from 'react';
 import { useLiff, useFileUpload } from '@/hooks';
-import { petSchema } from '@/utils/validation';
+import { otherSchema } from '@/utils/validation';
 import { scrollToFirstError } from '@/utils/dom';
 import { convertBEtoCE } from './ClaimDetailsSection';
 import { LoadingOverlay, SuccessScreen, ErrorModal } from '@/components';
 import { submitClaim } from '@/services/api';
 import { getContactEmail } from '@/config';
-import { PET_TYPES } from '@/config/petType';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faPaperPlane } from '@fortawesome/free-solid-svg-icons';
-import { InsuredInfoSection } from '@/components/features/claim';
-import { PersonalDocumentUpload } from '@/components/features/claim/PersonalDocumentUpload';
+import { InsuredInfoSection, PersonalDocumentUpload } from '@/components/features/claim';
 import { ClaimDetailsSection } from './ClaimDetailsSection';
 
 // Placeholder policy data — will be replaced by Loxley API integration.
 const MOCK_POLICY_DATA = {
-    policyNumber: '14058-108-240004161',
-    policyHolder: 'จิตสุชา ดาราเย็น',
+    policyNumber: '14025-799-123001231',
+    policyHolder: 'นายทดสอบ ระบบเคลม',
     idcard: '1-1234-56789-01-2',
 };
 
@@ -30,14 +28,7 @@ interface FormValues {
     phone: string;
     email: string;
     incidentDateTime: string;
-    petName: string;
-    petType: string;
-    petTypeOther: string;
-    petSpecies: string;
-    petGender: string;
-    petAge: string;
-    microchipNumber: string;
-    petHospital: string;
+    lossPlace: string;
     damageType: string;
     lossReserve: string;
 }
@@ -47,14 +38,7 @@ interface FormErrors {
     phone?: string;
     email?: string;
     incidentDateTime?: string;
-    petName?: string;
-    petType?: string;
-    petTypeOther?: string;
-    petSpecies?: string;
-    petGender?: string;
-    petAge?: string;
-    microchipNumber?: string;
-    petHospital?: string;
+    lossPlace?: string;
     damageType?: string;
     lossReserve?: string;
 }
@@ -72,14 +56,7 @@ export default function ClaimForm() {
         phone: '',
         email: '',
         incidentDateTime: '',
-        petName: '',
-        petType: '',
-        petTypeOther: '',
-        petSpecies: '',
-        petGender: '',
-        petAge: '',
-        microchipNumber: '',
-        petHospital: '',
+        lossPlace: '',
         damageType: '',
         lossReserve: '',
     });
@@ -87,15 +64,6 @@ export default function ClaimForm() {
 
     const docUpload = useFileUpload({ maxFiles: 10, autoCompress: true });
     const [docFileErrors, setDocFileErrors] = useState<string[]>([]);
-
-    const handleDocFilesAdd = async (files: FileList | File[]) => {
-        const results = await docUpload.addFiles(files);
-        const newErrors: string[] = [];
-        results.forEach((res) => {
-            if (!res.valid && res.error) newErrors.push(res.error);
-        });
-        setDocFileErrors(newErrors);
-    };
 
     const [submitState, setSubmitState] = useState<{
         loading: boolean;
@@ -119,7 +87,7 @@ export default function ClaimForm() {
     };
 
     const validateForm = (): boolean => {
-        const result = petSchema.safeParse({ ...values });
+        const result = otherSchema.safeParse({ ...values });
         if (result.success) {
             setErrors({});
             return true;
@@ -143,12 +111,6 @@ export default function ClaimForm() {
         return false;
     };
 
-    const buildPetType = (): string => {
-        if (values.petType === '006') return values.petTypeOther || 'อื่นๆ';
-        const petTypeItem = PET_TYPES.find(p => p.value === values.petType);
-        return petTypeItem ? petTypeItem.label : '';
-    };
-
     const handleSubmit = async (e: React.SyntheticEvent<HTMLFormElement>) => {
         e.preventDefault();
 
@@ -163,7 +125,6 @@ export default function ClaimForm() {
         setSubmitState({ loading: true, success: false, error: null, caseNumber: null, notificationNo: null });
 
         try {
-            const petTypeDescription = buildPetType();
             const incidentDateTime = convertBEtoCE(values.incidentDateTime);
 
             const payload = {
@@ -172,13 +133,7 @@ export default function ClaimForm() {
                 phone: values.phone,
                 email: values.email || undefined,
                 incidentDateTime,
-                petName: values.petName,
-                petType: petTypeDescription,
-                petSpecies: values.petSpecies || undefined,
-                petGender: values.petGender,
-                petAge: values.petAge || undefined,
-                microchipNumber: values.microchipNumber || undefined,
-                petHospital: values.petHospital || undefined,
+                lossPlace: values.lossPlace,
                 damageType: values.damageType,
                 lossReserve: values.lossReserve ? parseFloat(values.lossReserve.replace(/,/g, '')) : undefined,
             };
@@ -217,12 +172,18 @@ export default function ClaimForm() {
         }
     };
 
+    const handleDocFilesAdd = async (newFiles: FileList | File[]) => {
+        const results = await docUpload.addFiles(newFiles);
+        const errs = results.filter((r) => !r.valid).map((r) => r.error ?? 'ไฟล์ไม่ถูกต้อง');
+        setDocFileErrors(errs.length > 0 ? errs : []);
+    };
+
     const handleCloseError = () => {
         setSubmitState((s) => ({ ...s, error: null }));
     };
 
     if (submitState.success) {
-        const contactEmail = getContactEmail('pet');
+        const contactEmail = getContactEmail('other');
         return (
             <SuccessScreen
                 notificationNo={submitState.notificationNo ?? undefined}
@@ -245,7 +206,7 @@ export default function ClaimForm() {
             <div className="header-section">
                 <div className="header-logo">DHIPAYA INSURANCE</div>
                 <div style={{ fontSize: '0.95rem', marginTop: 5 }}>
-                    แจ้งเคลม ประกันภัยสัตว์เลี้ยง(Pet) (สอบถามข้อมูลเพิ่มเติม กรุณาติดต่อ Call Center 1736)
+                    แจ้งเคลม Other (สอบถามข้อมูลเพิ่มเติม กรุณาติดต่อ Call Center 1736)
                 </div>
             </div>
 
@@ -263,27 +224,13 @@ export default function ClaimForm() {
                     <ClaimDetailsSection
                         values={{
                             incidentDateTime: values.incidentDateTime,
-                            petName: values.petName,
-                            petType: values.petType,
-                            petTypeOther: values.petTypeOther,
-                            petSpecies: values.petSpecies,
-                            petGender: values.petGender,
-                            petAge: values.petAge,
-                            microchipNumber: values.microchipNumber,
-                            petHospital: values.petHospital,
+                            lossPlace: values.lossPlace,
                             damageType: values.damageType,
                             lossReserve: values.lossReserve,
                         }}
                         errors={{
                             incidentDateTime: errors.incidentDateTime,
-                            petName: errors.petName,
-                            petType: errors.petType,
-                            petTypeOther: errors.petTypeOther,
-                            petSpecies: errors.petSpecies,
-                            petGender: errors.petGender,
-                            petAge: errors.petAge,
-                            microchipNumber: errors.microchipNumber,
-                            petHospital: errors.petHospital,
+                            lossPlace: errors.lossPlace,
                             damageType: errors.damageType,
                             lossReserve: errors.lossReserve,
                         }}
@@ -298,10 +245,7 @@ export default function ClaimForm() {
                         maxFiles={10}
                         errors={docFileErrors}
                         instructions={[
-                            "1. ใบรับรองแพทย์ในวันที่เข้ารับการรักษา (กรณีเบิกค่าเจ็บป่วย/อุบัติเหตุ) หรือ สมุดวัคซีน (กรณีเบิกค่าวัคซีน)",
-                            "2. ใบเสร็จค่ารักษา",
-                            "3. สำเนาบัตรประชาชนของผู้เอาประกันภัย",
-                            "4. หน้าบัญชีธนาคารของผู้เอาประกันภัย",
+                            
                         ]}
                     />
 

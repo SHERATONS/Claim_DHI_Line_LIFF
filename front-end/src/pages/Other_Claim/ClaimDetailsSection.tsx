@@ -1,6 +1,6 @@
 /**
  * Section 2: รายละเอียดเคลม
- * Adapted from CAR_EAR_CPM_Claim
+ * ลอกจาก LIFF_Form.page — cause of loss, datetime, address cascade, zipcode, reserve
  */
 
 import { Card, Input } from '@/components/ui';
@@ -9,14 +9,12 @@ interface ClaimDetailsSectionProps {
     values: {
         incidentDateTime: string;
         lossPlace: string;
-        Golfer: string;
         damageType: string;
         lossReserve: string;
     };
     errors: {
         incidentDateTime?: string;
         lossPlace?: string;
-        Golfer?: string;
         damageType?: string;
         lossReserve?: string;
     };
@@ -41,12 +39,16 @@ export function convertBEtoCE(dateTimeValue: string): string {
     const yearStr = dateParts[0];
     if (!yearStr) return dateTimeValue;
 
-    let year = parseInt(yearStr, 10);
+    const year = parseInt(yearStr, 10);
+    if (isNaN(year)) return dateTimeValue;
+
     if (year > 2400) {
-        year -= 543;
+        const ceYear = year - 543;
+        const ceYearStr = ceYear.toString().padStart(4, '0');
+        return `${ceYearStr}-${dateParts[1]}-${dateParts[2]}T${parts[1]}`;
     }
 
-    return `${year}-${dateParts[1]}-${dateParts[2]}T${parts[1]}`;
+    return dateTimeValue;
 }
 
 export function ClaimDetailsSection({
@@ -55,26 +57,13 @@ export function ClaimDetailsSection({
     onChange,
 }: ClaimDetailsSectionProps) {
     return (
-        <Card title="รายละเอียดเคลม (Golf)">
-            <Input
-                id="Golfer"
-                label="Golfer"
-                value={values.Golfer}
-                onChange={(e) => onChange('Golfer', e.target.value)}
-                error={errors.Golfer}
-                required
-                placeholder="- ชื่อ Golfer -"
-            />
-
+        <Card title="รายละเอียดเคลม (Other)">
             <Input
                 id="incidentDateTime"
-                label="วันที่/เวลาเกิดเหตุ"
                 type="datetime-local"
+                label="วันที่/เวลาเกิดเหตุ"
                 value={values.incidentDateTime}
-                onChange={(e) => {
-                    const val = e.target.value;
-                    onChange('incidentDateTime', val);
-                }}
+                onChange={(e) => onChange('incidentDateTime', e.target.value)}
                 error={errors.incidentDateTime}
                 required
             />
@@ -110,7 +99,6 @@ export function ClaimDetailsSection({
                 required
                 placeholder="0.00"
             />
-
         </Card>
     );
 }

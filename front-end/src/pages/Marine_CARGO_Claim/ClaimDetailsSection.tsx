@@ -4,27 +4,26 @@
  */
 
 import { Card, Input, Select } from '@/components/ui';
-import { MARINE_PLACES } from '@/config/marinePlaces';
 import { TRANSPORTATION_TYPE } from '@/config/transportationType';
 
 interface ClaimDetailsSectionProps {
     values: {
         incidentDateTime: string;
         lossPlace: string;
-        lossPlaceOther?: string;
         vehicleName: string;
-        damageDetails: string;
-        damageType: string;
+        vehiclePlate: string;
         transportationType: string;
+        damageType: string;
+        lossReserve: string;
     };
     errors: {
         incidentDateTime?: string;
         lossPlace?: string;
-        lossPlaceOther?: string;
         vehicleName?: string;
-        damageDetails?: string;
-        damageType?: string;
+        vehiclePlate?: string;
         transportationType?: string;
+        damageType?: string;
+        lossReserve?: string;
     };
     onChange: (field: string, value: string) => void;
 }
@@ -47,12 +46,16 @@ export function convertBEtoCE(dateTimeValue: string): string {
     const yearStr = dateParts[0];
     if (!yearStr) return dateTimeValue;
 
-    let year = parseInt(yearStr, 10);
+    const year = parseInt(yearStr, 10);
+    if (isNaN(year)) return dateTimeValue;
+
     if (year > 2400) {
-        year -= 543;
+        const ceYear = year - 543;
+        const ceYearStr = ceYear.toString().padStart(4, '0');
+        return `${ceYearStr}-${dateParts[1]}-${dateParts[2]}T${parts[1]}`;
     }
 
-    return `${year}-${dateParts[1]}-${dateParts[2]} ${parts[1]}`;
+    return dateTimeValue;
 }
 
 export function ClaimDetailsSection({
@@ -83,6 +86,16 @@ export function ClaimDetailsSection({
             </div>
 
             <Input
+                id="lossPlace"
+                label="สถานที่เกิดเหตุ"
+                value={values.lossPlace}
+                onChange={(e) => onChange('lossPlace', e.target.value)}
+                error={errors.lossPlace}
+                required
+                placeholder="- ระบุสถานที่เกิดเหตุ -"
+            />
+
+            <Input
                 id="vehicleName"
                 label="ชื่อพาหนะขนส่ง"
                 value={values.vehicleName}
@@ -92,30 +105,15 @@ export function ClaimDetailsSection({
                 placeholder="- ชื่อพาหนะขนส่ง -"
             />
 
-            <Select
-                id="lossPlace"
-                label="สถานที่เกิดเหตุ"
-                options={MARINE_PLACES.map((c) => ({ value: c.value, label: c.label }))}
-                value={values.lossPlace}
-                onChange={(e) => onChange('lossPlace', e.target.value)}
-                error={errors.lossPlace}
+            <Input
+                id="vehiclePlate"
+                label="ทะเบียนพาหนะขนส่ง (รถ, เลขเรือ, เลข Flight)"
+                value={values.vehiclePlate}
+                onChange={(e) => onChange('vehiclePlate', e.target.value)}
+                error={errors.vehiclePlate}
                 required
-                placeholder="- เลือกสถานที่เกิดเหตุ -"
+                placeholder="- ทะเบียนพาหนะขนส่ง (รถ, เลขเรือ, เลข Flight) -"
             />
-
-            {values.lossPlace === '007' && (
-                <div className="mt-3">
-                    <Input
-                        id="lossPlaceOther"
-                        label="ระบุสถานที่เกิดเหตุ (อื่นๆ)"
-                        value={values.lossPlaceOther || ''}
-                        onChange={(e) => onChange('lossPlaceOther', e.target.value)}
-                        error={errors.lossPlaceOther}
-                        required
-                        placeholder="- ระบุสถานที่เกิดเหตุ -"
-                    />
-                </div>
-            )}
 
             <Select
                 id="transportationType"
@@ -129,23 +127,25 @@ export function ClaimDetailsSection({
             />
 
             <Input
-                id="damageDetails"
-                label="สาเหตุความเสียหาย"
-                value={values.damageDetails}
-                onChange={(e) => onChange('damageDetails', e.target.value)}
-                error={errors.damageDetails}
-                required
-                placeholder="- สาเหตุความเสียหาย -"
-            />
-
-            <Input
                 id="damageType"
-                label="ลักษณะความเสียหาย"
+                label="รายละเอียดของความเสียหายเพิ่มเติม"
                 value={values.damageType}
                 onChange={(e) => onChange('damageType', e.target.value)}
                 error={errors.damageType}
                 required
-                placeholder="- อะไรเสียหาย/เสียหายอย่างไร -"
+                placeholder="- ระบุรายละเอียดของความเสียหายเพิ่มเติม -"
+            />
+
+            <Input
+                id="lossReserve"
+                label="ประมาณการค่าสินไหม"
+                type="text"
+                inputMode="decimal"
+                value={values.lossReserve}
+                onChange={(e) => onChange('lossReserve', e.target.value)}
+                error={errors.lossReserve}
+                required
+                placeholder="0.00"
             />
         </Card>
     );

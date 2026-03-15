@@ -3,17 +3,17 @@
  * Adapted from CAR_EAR_CPM_Claim but using useCountryCascade
  */
 
-import { useState, useEffect } from 'react';
-import { useLiff, useCountryCascade } from '@/hooks';
+import { useState } from 'react';
+import { useLiff, useFileUpload } from '@/hooks';
 import { taSchema } from '@/utils/validation';
 import { scrollToFirstError } from '@/utils/dom';
 import { convertBEtoCE, ClaimDetailsSection } from './ClaimDetailsSection';
 import { LoadingOverlay, SuccessScreen, ErrorModal } from '@/components';
 import { submitClaim } from '@/services/api';
-import { getContactEmail, USE_LOCAL_SAVE } from '@/config';
+import { getContactEmail } from '@/config';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faPaperPlane } from '@fortawesome/free-solid-svg-icons';
-import { InsuredInfoSection } from '@/components/features/claim';
+import { InsuredInfoSection, PersonalDocumentUpload } from '@/components/features/claim';
 
 // Placeholder policy data — will be replaced by Loxley API integration.
 const MOCK_POLICY_DATA = {
@@ -27,12 +27,10 @@ interface FormValues {
     phone: string;
     email: string;
     incidentDateTime: string;
-    travelFlight: string;
-    country: string;
-    town: string;
     accidentPlace: string;
-    damageDetails: string;
+    flightNumber: string;
     damageType: string;
+    lossReserve: string;
 }
 
 interface FormErrors {
@@ -40,12 +38,10 @@ interface FormErrors {
     phone?: string;
     email?: string;
     incidentDateTime?: string;
-    travelFlight?: string;
-    country?: string;
-    town?: string;
     accidentPlace?: string;
-    damageDetails?: string;
+    flightNumber?: string;
     damageType?: string;
+    lossReserve?: string;
 }
 
 export default function ClaimForm() {
@@ -61,31 +57,30 @@ export default function ClaimForm() {
         phone: '',
         email: '',
         incidentDateTime: '',
-        travelFlight: '',
-        country: '',
-        town: '',
         accidentPlace: '',
-        damageDetails: '',
+        flightNumber: '',
         damageType: '',
+        lossReserve: '',
     });
     const [errors, setErrors] = useState<FormErrors>({});
 
-    const location = useCountryCascade();
 
-    useEffect(() => {
-        location.fetchCountries();
-    }, [location.fetchCountries]);
+
+    const docUpload = useFileUpload({ maxFiles: 10, autoCompress: true, filePrefix: 'document' });
+    const [docFileErrors, setDocFileErrors] = useState<string[]>([]);
 
     const [submitState, setSubmitState] = useState<{
         loading: boolean;
         success: boolean;
         error: string | null;
         caseNumber: string | null;
+        notificationNo: string | null;
     }>({
         loading: false,
         success: false,
         error: null,
         caseNumber: null,
+        notificationNo: null,
     });
 
     const handleChange = (field: string, value: string) => {
@@ -131,59 +126,63 @@ export default function ClaimForm() {
             return;
         }
 
-        setSubmitState({ loading: true, success: false, error: null, caseNumber: null });
+        setSubmitState({ loading: true, success: false, error: null, caseNumber: null, notificationNo: null });
 
         try {
-            const countryItem = location.countries.find(c => c.id === values.country);
-            const townItem = location.towns.find(t => t.id === values.town);
-
-            const fullLocation = [
-                values.accidentPlace,
-                townItem?.text,
-                countryItem?.text
-            ].filter(Boolean).join(', ');
-
             const incidentDateTime = convertBEtoCE(values.incidentDateTime);
 
             const payload = {
                 policyNumber,
-                damageDetails: values.damageDetails,
-                incidentDateTime,
-                damageType: values.damageType,
-                lossPlace: fullLocation,
-                country: values.country,
-                town: values.town,
-                accidentPlace: values.accidentPlace,
-                travelFlight: values.travelFlight,
                 notifierName: values.notifierName,
                 phone: values.phone,
                 email: values.email || undefined,
+                incidentDateTime,
+                damageType: values.damageType,
+                accidentPlace: values.accidentPlace,
+                flightNumber: values.flightNumber,
+                lossReserve: values.lossReserve ? parseFloat(values.lossReserve.replace(/,/g, '')) : undefined,
             };
 
-            const allFiles: File[] = [];
+            const allFiles = [
+                ...docUpload.files.map((f) => f.file),
+            ];
 
-            if (USE_LOCAL_SAVE) {
-                const { saveClaimLocally } = await import('@/services/localSubmit');
-                await saveClaimLocally({ claimType: 'TA_Claim', data: payload, documentFiles: allFiles });
-                setSubmitState({ loading: false, success: true, error: null, caseNumber: 'LOCAL-SAVE-' + Date.now() });
-                return;
-            }
+            const formData = new FormData();
+            Object.entries(payload).forEach(([key, value]) => {
+                if (value !== undefined && value !== null) {
+                    formData.append(key, value as string);
+                }
+            });
+            allFiles.forEach((file) => formData.append('files', file));
 
-            const result = await submitClaim(payload, token);
+            const result = await submitClaim(formData, token);
 
             if (!result.caseId) {
                 throw new Error('ไม่ได้รับหมายเลขเคส');
             }
 
-            setSubmitState({ loading: false, success: true, error: null, caseNumber: result.caseNumber ?? null });
+            setSubmitState({
+                loading: false,
+                success: true,
+                error: null,
+                caseNumber: result.caseNumber ?? null,
+                notificationNo: result.notificationNo ?? null,
+            });
         } catch (error) {
             setSubmitState({
                 loading: false,
                 success: false,
                 error: error instanceof Error ? error.message : 'เกิดข้อผิดพลาดในการส่งข้อมูล',
                 caseNumber: null,
+                notificationNo: null,
             });
         }
+    };
+
+    const handleDocFilesAdd = async (newFiles: FileList | File[]) => {
+        const results = await docUpload.addFiles(newFiles);
+        const errs = results.filter((r) => !r.valid).map((r) => r.error ?? 'ไฟล์ไม่ถูกต้อง');
+        setDocFileErrors(errs.length > 0 ? errs : []);
     };
 
     const handleCloseError = () => {
@@ -194,7 +193,7 @@ export default function ClaimForm() {
         const contactEmail = getContactEmail('ta');
         return (
             <SuccessScreen
-                caseNumber={submitState.caseNumber ?? undefined}
+                notificationNo={submitState.notificationNo ?? undefined}
                 contactEmail={contactEmail}
                 onClose={closeWindow}
             />
@@ -214,7 +213,7 @@ export default function ClaimForm() {
             <div className="header-section">
                 <div className="header-logo">DHIPAYA INSURANCE</div>
                 <div style={{ fontSize: '0.95rem', marginTop: 5 }}>
-                    แจ้งเคลม TA (สอบถามข้อมูลเพิ่มเติม กรุณาติดต่อ Call Center 1736)
+                    แจ้งเคลม ประกันการเดินทาง(TA) (สอบถามข้อมูลเพิ่มเติม กรุณาติดต่อ Call Center 1736)
                 </div>
             </div>
 
@@ -240,31 +239,31 @@ export default function ClaimForm() {
                     <ClaimDetailsSection
                         values={{
                             incidentDateTime: values.incidentDateTime,
-                            travelFlight: values.travelFlight,
-                            country: values.country,
-                            town: values.town,
                             accidentPlace: values.accidentPlace,
-                            damageDetails: values.damageDetails,
                             damageType: values.damageType,
+                            flightNumber: values.flightNumber,
+                            lossReserve: values.lossReserve,
                         }}
                         errors={{
                             incidentDateTime: errors.incidentDateTime,
-                            travelFlight: errors.travelFlight,
-                            country: errors.country,
-                            town: errors.town,
                             accidentPlace: errors.accidentPlace,
-                            damageDetails: errors.damageDetails,
                             damageType: errors.damageType,
+                            flightNumber: errors.flightNumber,
+                            lossReserve: errors.lossReserve,
                         }}
                         onChange={handleChange}
-                        countries={location.countries}
-                        towns={location.towns}
-                        selectedCountry={location.selectedCountry}
-                        selectedTown={location.selectedTown}
-                        loadingCountries={location.loadingCountries}
-                        loadingTowns={location.loadingTowns}
-                        onCountryChange={location.setSelectedCountry}
-                        onTownChange={location.setSelectedTown}
+                    />
+
+                    <PersonalDocumentUpload
+                        files={docUpload.files}
+                        onFilesAdd={handleDocFilesAdd}
+                        onFileRemove={docUpload.removeFile}
+                        canAddMore={docUpload.canAddMore}
+                        maxFiles={10}
+                        errors={docFileErrors}
+                        instructions={[
+                            
+                        ]}
                     />
 
                     <button type="submit" className="btn-submit" disabled={submitState.loading}>

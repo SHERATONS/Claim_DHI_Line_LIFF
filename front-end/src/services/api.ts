@@ -137,6 +137,7 @@ export async function submitClaim(
   const respData = response.data as any;
   if (respData?.data) {
     return {
+      notificationNo: respData.data.notificationNo,
       success: respData.success,
       caseId: respData.data.caseId,
       caseNumber: respData.data.caseNumber,
