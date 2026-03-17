@@ -1,0 +1,14 @@
+{
+    "policyId": "001XXXXXXXXXXXXXXX",
+    "contactId": "003XXXXXXXXXXXXXXX",
+    "notifierName": "Somchai Cargo",
+    "phone": "0805556666",
+    "email": "cargo-ops@test.com",
+    "incidentDateTime": "2026-03-17 09:00",
+    "lossPlace": "Bangkok Port",
+    "vehicleName": "Volvo Truck XL",
+    "vehiclePlate": "88-1234",
+    "transportationType": "Sea/Road",
+    "causeOfLoss": "Collision during unloading",
+    "lossReserve": "250000"
+}

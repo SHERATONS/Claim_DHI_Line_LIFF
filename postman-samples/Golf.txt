@@ -1,0 +1,11 @@
+{
+    "policyId": "001XXXXXXXXXXXXXXX",
+    "contactId": "003XXXXXXXXXXXXXXX",
+    "notifierName": "Somchai Golf",
+    "phone": "0804445555",
+    "email": "golfer@test.com",
+    "incidentDateTime": "2026-03-17 10:00",
+    "lossPlace": "Green Valley Club",
+    "causeOfLoss": "Third Party Injury",
+    "lossReserve": "10000"
+}

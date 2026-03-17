@@ -29,7 +29,7 @@ interface FormValues {
     incidentDateTime: string;
     accidentPlace: string;
     flightNumber: string;
-    damageType: string;
+    causeOfLoss: string;
     lossReserve: string;
 }
 
@@ -40,7 +40,7 @@ interface FormErrors {
     incidentDateTime?: string;
     accidentPlace?: string;
     flightNumber?: string;
-    damageType?: string;
+    causeOfLoss?: string;
     lossReserve?: string;
 }
 
@@ -59,7 +59,7 @@ export default function ClaimForm() {
         incidentDateTime: '',
         accidentPlace: '',
         flightNumber: '',
-        damageType: '',
+        causeOfLoss: '',
         lossReserve: '',
     });
     const [errors, setErrors] = useState<FormErrors>({});
@@ -132,13 +132,14 @@ export default function ClaimForm() {
             const incidentDateTime = convertBEtoCE(values.incidentDateTime);
 
             const payload = {
-                policyNumber,
+                policyNo: policyNumber,
+                contactId: idcard,
                 notifierName: values.notifierName,
                 phone: values.phone,
                 email: values.email || undefined,
                 incidentDateTime,
-                damageType: values.damageType,
-                accidentPlace: values.accidentPlace,
+                causeOfLoss: values.causeOfLoss,
+                lossPlace: values.accidentPlace,
                 flightNumber: values.flightNumber,
                 lossReserve: values.lossReserve ? parseFloat(values.lossReserve.replace(/,/g, '')) : undefined,
             };
@@ -240,14 +241,14 @@ export default function ClaimForm() {
                         values={{
                             incidentDateTime: values.incidentDateTime,
                             accidentPlace: values.accidentPlace,
-                            damageType: values.damageType,
+                            causeOfLoss: values.causeOfLoss,
                             flightNumber: values.flightNumber,
                             lossReserve: values.lossReserve,
                         }}
                         errors={{
                             incidentDateTime: errors.incidentDateTime,
                             accidentPlace: errors.accidentPlace,
-                            damageType: errors.damageType,
+                            causeOfLoss: errors.causeOfLoss,
                             flightNumber: errors.flightNumber,
                             lossReserve: errors.lossReserve,
                         }}

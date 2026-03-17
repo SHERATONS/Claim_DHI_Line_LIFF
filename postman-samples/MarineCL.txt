@@ -1,0 +1,14 @@
+{
+    "policyId": "001XXXXXXXXXXXXXXX",
+    "contactId": "003XXXXXXXXXXXXXXX",
+    "notifierName": "Somchai CL",
+    "phone": "0807778888",
+    "email": "marine-cl@test.com",
+    "incidentDateTime": "2026-03-17 11:00",
+    "lossPlace": "Main Terminal",
+    "vehicleName": "Gantry Crane A",
+    "vehiclePlate": "RT-9988",
+    "transportationType": "Port Internal",
+    "causeOfLoss": "Third Party Property Damage",
+    "lossReserve": "500000"
+}

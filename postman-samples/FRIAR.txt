@@ -1,0 +1,11 @@
+{
+    "policyId": "001XXXXXXXXXXXXXXX",
+    "contactId": "003XXXXXXXXXXXXXXX",
+    "notifierName": "Somchai FRIAR",
+    "phone": "0806667777",
+    "email": "friar-claim@test.com",
+    "incidentDateTime": "2026-03-17 10:00",
+    "lossPlace": "Project Site West",
+    "causeOfLoss": "Machinery Breakdown",
+    "lossReserve": "150000"
+}

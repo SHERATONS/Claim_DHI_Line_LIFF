@@ -31,7 +31,7 @@ interface FormValues {
     lossPlace: string;
     driverName: string;
     droneModel: string;
-    damageType: string;
+    causeOfLoss: string;
     lossReserve: string;
 }
 
@@ -43,7 +43,7 @@ interface FormErrors {
     lossPlace?: string;
     driverName?: string;
     droneModel?: string;
-    damageType?: string;
+    causeOfLoss?: string;
     lossReserve?: string;
 }
 
@@ -63,7 +63,7 @@ export default function ClaimForm() {
         lossPlace: '',
         driverName: '',
         droneModel: '',
-        damageType: '',
+        causeOfLoss: '',
         lossReserve: '',
     });
     const [errors, setErrors] = useState<FormErrors>({});
@@ -134,7 +134,8 @@ export default function ClaimForm() {
             const incidentDateTime = convertBEtoCE(values.incidentDateTime);
 
             const payload = {
-                policyNumber,
+                policyNo: policyNumber,
+                contactId: idcard,
                 notifierName: values.notifierName,
                 phone: values.phone,
                 email: values.email || undefined,
@@ -142,7 +143,7 @@ export default function ClaimForm() {
                 lossPlace: values.lossPlace,
                 driverName: values.driverName,
                 droneModel: values.droneModel,
-                damageType: values.damageType,
+                causeOfLoss: values.causeOfLoss,
                 lossReserve: values.lossReserve ? parseFloat(values.lossReserve.replace(/,/g, '')) : undefined,
             };
 
@@ -243,7 +244,7 @@ export default function ClaimForm() {
                             lossPlace: values.lossPlace,
                             driverName: values.driverName,
                             droneModel: values.droneModel,
-                            damageType: values.damageType,
+                            causeOfLoss: values.causeOfLoss,
                             lossReserve: values.lossReserve,
                         }}
                         errors={{
@@ -251,7 +252,7 @@ export default function ClaimForm() {
                             lossPlace: errors.lossPlace,
                             driverName: errors.driverName,
                             droneModel: errors.droneModel,
-                            damageType: errors.damageType,
+                            causeOfLoss: errors.causeOfLoss,
                             lossReserve: errors.lossReserve,
                         }}
                         onChange={handleChange}

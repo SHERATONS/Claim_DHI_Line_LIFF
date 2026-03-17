@@ -29,7 +29,7 @@ interface FormValues {
   email: string;
   incidentDateTime: string;
   lossPlace: string;
-  damageType: string;
+  causeOfLoss: string;
   lossReserve: string;
 }
 
@@ -43,7 +43,7 @@ interface FormErrors {
   district?: string;
   subdistrict?: string;
   zipcode?: string;
-  damageType?: string;
+  causeOfLoss?: string;
   lossReserve?: string;
 }
 
@@ -60,7 +60,7 @@ export default function ClaimForm() {
     email: '',
     incidentDateTime: '',
     lossPlace: '',
-    damageType: '',
+    causeOfLoss: '',
     lossReserve: '',
   });
   const [errors, setErrors] = useState<FormErrors>({});
@@ -182,9 +182,8 @@ export default function ClaimForm() {
         districtId: location.selectedDistrict,
         subdistrictId: location.selectedSubdistrict,
         zipcode: location.zipcode,
-        damageType: values.damageType,
+        causeOfLoss: values.causeOfLoss,
         lossReserve: values.lossReserve || undefined,
-        causeOfLoss: '974', // Default for FR-IAR if dropdown removed
       };
 
       const formData = new FormData();
@@ -270,7 +269,7 @@ export default function ClaimForm() {
             values={{
               incidentDateTime: values.incidentDateTime,
               lossPlace: values.lossPlace,
-              damageType: values.damageType,
+              causeOfLoss: values.causeOfLoss,
               lossReserve: values.lossReserve,
             }}
             errors={{
@@ -280,7 +279,7 @@ export default function ClaimForm() {
               district: errors.district,
               subdistrict: errors.subdistrict,
               zipcode: errors.zipcode,
-              damageType: errors.damageType,
+              causeOfLoss: errors.causeOfLoss,
               lossReserve: errors.lossReserve,
             }}
             onChange={handleChange}

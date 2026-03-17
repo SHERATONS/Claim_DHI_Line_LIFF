@@ -1,0 +1,17 @@
+{
+    "policyId": "001XXXXXXXXXXXXXXX",
+    "contactId": "003XXXXXXXXXXXXXXX",
+    "notifierName": "Somchai CAREAR",
+    "phone": "0801112222",
+    "email": "somchai@test.com",
+    "incidentDateTime": "2026-03-17 14:00",
+    "lossPlace": "Construction Site A",
+    "fullAddress": "123/45 Construction Rd, Bangkok",
+    "projectTitle": "Mega Mall Project",
+    "contractorName": "Bangkok Builders Co.",
+    "causeOfLoss": "Fire",
+    "lossReserve": "100000",
+    "provinceId": "PROV-001",
+    "districtId": "DIST-001",
+    "subdistrictId": "SUB-001"
+}

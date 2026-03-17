@@ -1,0 +1,11 @@
+{
+    "policyId": "001XXXXXXXXXXXXXXX",
+    "contactId": "003XXXXXXXXXXXXXXX",
+    "notifierName": "Somsri Other",
+    "phone": "0800001111",
+    "email": "other@test.com",
+    "incidentDateTime": "2026-03-17 12:00",
+    "lossPlace": "Warehouse 5",
+    "causeOfLoss": "Water Damage",
+    "lossReserve": "20000"
+}

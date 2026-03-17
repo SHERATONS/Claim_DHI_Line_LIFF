@@ -30,7 +30,7 @@ interface FormValues {
     incidentDateTime: string;
     lossPlace: string;
     boatName: string;
-    damageType: string;
+    causeOfLoss: string;
     lossReserve: string;
 }
 
@@ -41,7 +41,7 @@ interface FormErrors {
     incidentDateTime?: string;
     lossPlace?: string;
     boatName?: string;
-    damageType?: string;
+    causeOfLoss?: string;
     lossReserve?: string;
 }
 
@@ -60,7 +60,7 @@ export default function ClaimForm() {
         incidentDateTime: '',
         lossPlace: '',
         boatName: '',
-        damageType: '',
+        causeOfLoss: '',
         lossReserve: '',
     });
     const [errors, setErrors] = useState<FormErrors>({});
@@ -131,14 +131,15 @@ export default function ClaimForm() {
             const incidentDateTime = convertBEtoCE(values.incidentDateTime);
 
             const payload = {
-                policyNumber,
+                policyNo: policyNumber,
+                contactId: idcard,
                 notifierName: values.notifierName,
                 phone: values.phone,
                 email: values.email || undefined,
                 incidentDateTime,
                 lossPlace: values.lossPlace,
                 boatName: values.boatName,
-                damageType: values.damageType,
+                causeOfLoss: values.causeOfLoss,
                 lossReserve: values.lossReserve ? parseFloat(values.lossReserve.replace(/,/g, '')) : undefined,
             };
 
@@ -230,14 +231,14 @@ export default function ClaimForm() {
                             incidentDateTime: values.incidentDateTime,
                             lossPlace: values.lossPlace,
                             boatName: values.boatName,
-                            damageType: values.damageType,
+                            causeOfLoss: values.causeOfLoss,
                             lossReserve: values.lossReserve,
                         }}
                         errors={{
                             incidentDateTime: errors.incidentDateTime,
                             lossPlace: errors.lossPlace,
                             boatName: errors.boatName,
-                            damageType: errors.damageType,
+                            causeOfLoss: errors.causeOfLoss,
                             lossReserve: errors.lossReserve,
                         }}
                         onChange={handleChange}

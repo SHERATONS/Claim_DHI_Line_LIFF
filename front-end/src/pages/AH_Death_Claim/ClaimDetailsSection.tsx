@@ -6,7 +6,7 @@ interface ClaimDetailsSectionProps {
         lossPlace: string;
         treatmentDate: string;
         treatmentHospital: string;
-        causeOfIllness: string;
+        causeOfDeath: string;
         lossReserve: string;
     };
     errors: {
@@ -14,7 +14,7 @@ interface ClaimDetailsSectionProps {
         lossPlace?: string;
         treatmentDate?: string;
         treatmentHospital?: string;
-        causeOfIllness?: string;
+        causeOfDeath?: string;
         lossReserve?: string;
     };
     onChange: (field: string, value: string) => void;
@@ -68,11 +68,11 @@ export function ClaimDetailsSection({
             />
 
             <Input
-                id="causeOfIllness"
+                id="causeOfDeath"
                 label="สาเหตุการเสียชีวิต"
-                value={values.causeOfIllness}
-                onChange={(e) => onChange('causeOfIllness', e.target.value)}
-                error={errors.causeOfIllness}
+                value={values.causeOfDeath}
+                onChange={(e) => onChange('causeOfDeath', e.target.value)}
+                error={errors.causeOfDeath}
                 required
                 placeholder="- ระบุสาเหตุการเสียชีวิต -"
             />

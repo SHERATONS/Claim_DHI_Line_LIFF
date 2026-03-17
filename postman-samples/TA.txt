@@ -1,0 +1,12 @@
+{
+    "policyId": "001XXXXXXXXXXXXXXX",
+    "contactId": "003XXXXXXXXXXXXXXX",
+    "notifierName": "Somchai TA",
+    "phone": "0802223333",
+    "email": "traveler@test.com",
+    "incidentDateTime": "2026-03-17 21:00",
+    "lossPlace": "Changi Airport",
+    "flightNumber": "SQ975",
+    "causeOfLoss": "Delayed Baggage",
+    "lossReserve": "15000"
+}

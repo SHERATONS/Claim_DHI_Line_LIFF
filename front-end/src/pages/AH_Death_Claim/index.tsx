@@ -30,7 +30,7 @@ interface FormValues {
     lossPlace: string;
     treatmentDate: string;
     treatmentHospital: string;
-    causeOfIllness: string;
+    causeOfDeath: string;
     lossReserve: string;
 }
 
@@ -42,7 +42,7 @@ interface FormErrors {
     lossPlace?: string;
     treatmentDate?: string;
     treatmentHospital?: string;
-    causeOfIllness?: string;
+    causeOfDeath?: string;
     lossReserve?: string;
 }
 
@@ -62,7 +62,7 @@ export default function ClaimForm() {
         lossPlace: '',
         treatmentDate: '',
         treatmentHospital: '',
-        causeOfIllness: '',
+        causeOfDeath: '',
         lossReserve: '',
     });
     const [errors, setErrors] = useState<FormErrors>({});
@@ -149,16 +149,17 @@ export default function ClaimForm() {
             const treatmentDateCE = convertBEtoCE(values.treatmentDate);
 
             const payload = {
-                policyNumber,
-                accidentDate: accidentDateCE,
-                treatmentDate: treatmentDateCE,
-                treatmentHospital: values.treatmentHospital,
-                causeOfIllness: values.causeOfIllness,
-                lossPlace: values.lossPlace,
-                lossReserve: values.lossReserve ? parseFloat(values.lossReserve.replace(/,/g, '')) : undefined,
+                policyNo: policyNumber,
+                contactId: idcard,
                 notifierName: values.notifierName,
                 phone: values.phone,
                 email: values.email || undefined,
+                accidentDate: accidentDateCE,
+                treatmentDate: treatmentDateCE,
+                treatmentHospital: values.treatmentHospital,
+                causeOfDeath: values.causeOfDeath,
+                lossPlace: values.lossPlace,
+                lossReserve: values.lossReserve ? parseFloat(values.lossReserve.replace(/,/g, '')) : undefined,
             };
 
             const allFiles = [
@@ -260,7 +261,7 @@ export default function ClaimForm() {
                             lossPlace: values.lossPlace,
                             treatmentDate: values.treatmentDate,
                             treatmentHospital: values.treatmentHospital,
-                            causeOfIllness: values.causeOfIllness,
+                            causeOfDeath: values.causeOfDeath,
                             lossReserve: values.lossReserve,
                         }}
                         errors={{
@@ -268,7 +269,7 @@ export default function ClaimForm() {
                             lossPlace: errors.lossPlace,
                             treatmentDate: errors.treatmentDate,
                             treatmentHospital: errors.treatmentHospital,
-                            causeOfIllness: errors.causeOfIllness,
+                            causeOfDeath: errors.causeOfDeath,
                             lossReserve: errors.lossReserve,
                         }}
                         onChange={handleChange}

@@ -31,7 +31,7 @@ interface FormValues {
     lossPlace: string;
     projectTitle: string;
     contractorName: string;
-    damageType: string;
+    causeOfLoss: string;
     lossReserve: string;
 }
 
@@ -47,7 +47,7 @@ interface FormErrors {
     zipcode?: string;
     projectTitle?: string;
     contractorName?: string;
-    damageType?: string;
+    causeOfLoss?: string;
     lossReserve?: string;
 }
 
@@ -67,7 +67,7 @@ export default function ClaimForm() {
         lossPlace: '',
         projectTitle: '',
         contractorName: '',
-        damageType: '',
+        causeOfLoss: '',
         lossReserve: '',
     });
     const [errors, setErrors] = useState<FormErrors>({});
@@ -159,7 +159,8 @@ export default function ClaimForm() {
             const incidentDateTime = convertBEtoCE(values.incidentDateTime);
 
             const payload = {
-                policyNumber,
+                policyNo: policyNumber,
+                contactId: idcard,
                 notifierName: values.notifierName,
                 phone: values.phone,
                 email: values.email || undefined,
@@ -172,7 +173,7 @@ export default function ClaimForm() {
                 zipcode: location.zipcode,
                 projectTitle: values.projectTitle,
                 contractorName: values.contractorName,
-                damageType: values.damageType,
+                causeOfLoss: values.causeOfLoss,
                 lossReserve: values.lossReserve ? parseFloat(values.lossReserve.replace(/,/g, '')) : undefined,
             };
 
@@ -273,7 +274,7 @@ export default function ClaimForm() {
                             lossPlace: values.lossPlace,
                             projectTitle: values.projectTitle,
                             contractorName: values.contractorName,
-                            damageType: values.damageType,
+                            causeOfLoss: values.causeOfLoss,
                             lossReserve: values.lossReserve,
                         }}
                         errors={{
@@ -285,7 +286,7 @@ export default function ClaimForm() {
                             zipcode: errors.zipcode,
                             projectTitle: errors.projectTitle,
                             contractorName: errors.contractorName,
-                            damageType: errors.damageType,
+                            causeOfLoss: errors.causeOfLoss,
                             lossReserve: errors.lossReserve,
                         }}
                         onChange={handleChange}

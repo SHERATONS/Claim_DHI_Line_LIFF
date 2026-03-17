@@ -1,0 +1,13 @@
+{
+    "policyNo": "14058-108-240004161",
+    "contactId": "003XXXXXXXXXXXXXXX",
+    "notifierName": "Somchai Drone",
+    "phone": "0803334444",
+    "email": "drone-pilot@test.com",
+    "incidentDateTime": "2026-03-17 15:30",
+    "lossPlace": "Sky Park",
+    "driverName": "Pilot Somchai",
+    "droneModel": "DJI Mavic 3",
+    "causeOfLoss": "Crash",
+    "lossReserve": "75000"
+}

@@ -11,7 +11,7 @@ interface ClaimDetailsSectionProps {
   values: {
     incidentDateTime: string;
     lossPlace: string;
-    damageType: string;
+    causeOfLoss: string;
     lossReserve: string;
   };
   errors: {
@@ -21,7 +21,7 @@ interface ClaimDetailsSectionProps {
     district?: string;
     subdistrict?: string;
     zipcode?: string;
-    damageType?: string;
+    causeOfLoss?: string;
     lossReserve?: string;
   };
   onChange: (field: string, value: string) => void;
@@ -167,11 +167,11 @@ export function ClaimDetailsSection({
       />
 
       <Input
-        id="damageType"
+        id="causeOfLoss"
         label="รายละเอียดของความเสียหายเพิ่มเติม"
-        value={values.damageType}
-        onChange={(e) => onChange('damageType', e.target.value)}
-        error={errors.damageType}
+        value={values.causeOfLoss}
+        onChange={(e) => onChange('causeOfLoss', e.target.value)}
+        error={errors.causeOfLoss}
         required
         placeholder="- ระบุรายละเอียดของความเสียหายเพิ่มเติม -"
         />

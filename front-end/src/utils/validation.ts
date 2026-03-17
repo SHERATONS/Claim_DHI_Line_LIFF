@@ -202,7 +202,7 @@ export const frIarSchema = baseClaimSchema.extend({
       }
     }),
 
-  damageType: z
+  causeOfLoss: z
     .string()
     .min(1, 'กรุณาระบุรายละเอียดของความเสียหายเพิ่มเติม')
     .max(500, 'รายละเอียดของความเสียหายเพิ่มเติมยาวเกินไป')
@@ -287,7 +287,7 @@ export const carEarCpmSchema = baseClaimSchema.extend({
     .min(1, 'กรุณาเลือกตำบล/แขวงเพื่อให้ระบบกรอกรหัสไปรษณีย์')
     .regex(/^\d{5}$/, 'รหัสไปรษณีย์ต้องเป็นตัวเลข 5 หลัก'),
 
-  damageType: z
+  causeOfLoss: z
     .string()
     .min(1, 'กรุณาระบุลักษณะความเสียหาย')
     .max(100, 'ลักษณะความเสียหายยาวเกินไป')
@@ -336,7 +336,7 @@ export const droneSchema = baseClaimSchema.extend({
       }
     }),
 
-  damageType: z
+  causeOfLoss: z
     .string()
     .min(1, 'กรุณาระบุรายละเอียดของความเสียหายเพิ่มเติม')
     .max(200, 'รายละเอียดของความเสียหายเพิ่มเติมยาวเกินไป')
@@ -409,7 +409,7 @@ export const petSchema = baseClaimSchema.extend({
       }
     }),
 
-  damageType: z
+  causeOfLoss: z
     .string()
     .min(1, 'กรุณาระบุลักษณะความเสียหาย')
     .max(100, 'ลักษณะความเสียหายยาวเกินไป')
@@ -456,7 +456,7 @@ export const marineHullSchema = baseClaimSchema.extend({
       }
     }),
 
-  damageType: z
+  causeOfLoss: z
     .string()
     .min(1, 'กรุณาระบุรายละเอียดของความเสียหายเพิ่มเติม')
     .max(200, 'รายละเอียดของความเสียหายเพิ่มเติมยาวเกินไป')
@@ -508,7 +508,7 @@ export const marineCargoSchema = baseClaimSchema.extend({
     .string()
     .min(1, 'กรุณากรอกประเภทการขนส่ง'),
 
-  damageType: z
+  causeOfLoss: z
     .string()
     .min(1, 'กรุณาระบุรายละเอียดของความเสียหายเพิ่มเติม')
     .max(200, 'รายละเอียดของความเสียหายเพิ่มเติมยาวเกินไป')
@@ -561,7 +561,7 @@ export const marineClSchema = baseClaimSchema.extend({
     .string()
     .min(1, 'กรุณาเลือกประเภทการขนส่ง'),
 
-  damageType: z
+  causeOfLoss: z
     .string()
     .min(1, 'กรุณาระบุรายละเอียดของความเสียหายเพิ่มเติม')
     .max(200, 'รายละเอียดของความเสียหายเพิ่มเติมยาวเกินไป')
@@ -593,7 +593,7 @@ export const golfSchema = baseClaimSchema.extend({
       }
     }),
 
-  damageType: z
+  causeOfLoss: z
     .string()
     .min(1, 'กรุณาระบุรายละเอียดของความเสียหายเพิ่มเติม')
     .max(200, 'รายละเอียดของความเสียหายเพิ่มเติมยาวเกินไป')
@@ -632,7 +632,7 @@ export const taSchema = baseClaimSchema.extend({
       }
     }),
 
-  damageType: z
+  causeOfLoss: z
     .string()
     .min(1, 'กรุณาระบุลักษณะการบาดเจ็บ/ความเสียหาย')
     .max(200, 'ลักษณะการบาดเจ็บ/ความเสียหายยาวเกินไป')
@@ -720,7 +720,7 @@ export const otherSchema = baseClaimSchema.extend({
       }
     }),
 
-  damageType: z
+  causeOfLoss: z
     .string()
     .min(1, 'กรุณาระบุรายละเอียดของความเสียหายเพิ่มเติม')
     .max(200, 'รายละเอียดของความเสียหายเพิ่มเติมยาวเกินไป')

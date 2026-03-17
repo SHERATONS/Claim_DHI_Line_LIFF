@@ -1,0 +1,13 @@
+{
+    "policyId": "001XXXXXXXXXXXXXXX",
+    "contactId": "003XXXXXXXXXXXXXXX",
+    "notifierName": "Somying Rakdee",
+    "phone": "0812345678",
+    "email": "somying@test.com",
+    "incidentDateTime": "2026-03-17 10:30",
+    "lossPlace": "Bangkok Hospital",
+    "treatmentDate": "2026-03-17",
+    "treatmentHospital": "Bangkok Hospital",
+    "causeOfDeath": "Accident",
+    "lossReserve": "50000"
+}

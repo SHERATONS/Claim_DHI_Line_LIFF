@@ -32,7 +32,7 @@ interface FormValues {
     vehicleName: string;
     vehiclePlate: string;
     transportationType: string;
-    damageType: string;
+    causeOfLoss: string;
     lossReserve: string;
 }
 
@@ -45,7 +45,7 @@ interface FormErrors {
     vehicleName?: string;
     vehiclePlate?: string;
     transportationType?: string;
-    damageType?: string;
+    causeOfLoss?: string;
     lossReserve?: string;
 }
 
@@ -66,7 +66,7 @@ export default function ClaimForm() {
         vehicleName: '',
         vehiclePlate: '',
         transportationType: '',
-        damageType: '',
+        causeOfLoss: '',
         lossReserve: '',
     });
     const [errors, setErrors] = useState<FormErrors>({});
@@ -137,7 +137,8 @@ export default function ClaimForm() {
             const incidentDateTime = convertBEtoCE(values.incidentDateTime);
 
             const payload = {
-                policyNumber,
+                policyNo: policyNumber,
+                contactId: idcard,
                 notifierName: values.notifierName,
                 phone: values.phone,
                 email: values.email || undefined,
@@ -146,7 +147,7 @@ export default function ClaimForm() {
                 vehicleName: values.vehicleName,
                 vehiclePlate: values.vehiclePlate,
                 transportationType: values.transportationType,
-                damageType: values.damageType,
+                causeOfLoss: values.causeOfLoss,
                 lossReserve: values.lossReserve ? parseFloat(values.lossReserve.replace(/,/g, '')) : undefined,
             };
 
@@ -240,7 +241,7 @@ export default function ClaimForm() {
                             vehicleName: values.vehicleName,
                             vehiclePlate: values.vehiclePlate,
                             transportationType: values.transportationType,
-                            damageType: values.damageType,
+                            causeOfLoss: values.causeOfLoss,
                             lossReserve: values.lossReserve,
                         }}
                         errors={{
@@ -249,7 +250,7 @@ export default function ClaimForm() {
                             vehicleName: errors.vehicleName,
                             vehiclePlate: errors.vehiclePlate,
                             transportationType: errors.transportationType,
-                            damageType: errors.damageType,
+                            causeOfLoss: errors.causeOfLoss,
                             lossReserve: errors.lossReserve,
                         }}
                         onChange={handleChange}

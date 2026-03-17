@@ -38,7 +38,7 @@ interface FormValues {
     petAge: string;
     microchipNumber: string;
     petHospital: string;
-    damageType: string;
+    causeOfLoss: string;
     lossReserve: string;
 }
 
@@ -55,7 +55,7 @@ interface FormErrors {
     petAge?: string;
     microchipNumber?: string;
     petHospital?: string;
-    damageType?: string;
+    causeOfLoss?: string;
     lossReserve?: string;
 }
 
@@ -80,7 +80,7 @@ export default function ClaimForm() {
         petAge: '',
         microchipNumber: '',
         petHospital: '',
-        damageType: '',
+        causeOfLoss: '',
         lossReserve: '',
     });
     const [errors, setErrors] = useState<FormErrors>({});
@@ -167,7 +167,8 @@ export default function ClaimForm() {
             const incidentDateTime = convertBEtoCE(values.incidentDateTime);
 
             const payload = {
-                policyNumber,
+                policyNo: policyNumber,
+                contactId: idcard,
                 notifierName: values.notifierName,
                 phone: values.phone,
                 email: values.email || undefined,
@@ -179,7 +180,7 @@ export default function ClaimForm() {
                 petAge: values.petAge || undefined,
                 microchipNumber: values.microchipNumber || undefined,
                 petHospital: values.petHospital || undefined,
-                damageType: values.damageType,
+                causeOfLoss: values.causeOfLoss,
                 lossReserve: values.lossReserve ? parseFloat(values.lossReserve.replace(/,/g, '')) : undefined,
             };
 
@@ -271,7 +272,7 @@ export default function ClaimForm() {
                             petAge: values.petAge,
                             microchipNumber: values.microchipNumber,
                             petHospital: values.petHospital,
-                            damageType: values.damageType,
+                            causeOfLoss: values.causeOfLoss,
                             lossReserve: values.lossReserve,
                         }}
                         errors={{
@@ -284,7 +285,7 @@ export default function ClaimForm() {
                             petAge: errors.petAge,
                             microchipNumber: errors.microchipNumber,
                             petHospital: errors.petHospital,
-                            damageType: errors.damageType,
+                            causeOfLoss: errors.causeOfLoss,
                             lossReserve: errors.lossReserve,
                         }}
                         onChange={handleChange}

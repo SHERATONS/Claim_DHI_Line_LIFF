@@ -39,14 +39,14 @@ interface ClaimDetailsSectionProps {
     values: {
         incidentDateTime: string;
         accidentPlace: string;
-        damageType: string;    // Injury Details
+        causeOfLoss: string;    // Injury Details
         flightNumber?: string;
         lossReserve?: string;
     };
     errors: {
         incidentDateTime?: string;
         accidentPlace?: string;
-        damageType?: string;
+        causeOfLoss?: string;
         flightNumber?: string;
         lossReserve?: string;
     };
@@ -91,11 +91,11 @@ export function ClaimDetailsSection({
             />
 
             <Input
-                id="damageType"
+                id="causeOfLoss"
                 label="รายละเอียดของความเสียหายเพิ่มเติม"
-                value={values.damageType}
-                onChange={(e) => onChange('damageType', e.target.value)}
-                error={errors.damageType}
+                value={values.causeOfLoss}
+                onChange={(e) => onChange('causeOfLoss', e.target.value)}
+                error={errors.causeOfLoss}
                 required
                 placeholder="- ระบุรายละเอียดของความเสียหายเพิ่มเติม -"
             />

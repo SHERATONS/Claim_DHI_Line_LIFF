@@ -1,0 +1,16 @@
+{
+    "policyId": "001XXXXXXXXXXXXXXX",
+    "contactId": "003XXXXXXXXXXXXXXX",
+    "notifierName": "Somjai Pet",
+    "phone": "0811112222",
+    "email": "pet-owner@test.com",
+    "incidentDateTime": "2026-03-17 13:00",
+    "lossPlace": "Pet Clinic",
+    "petType": "Dog",
+    "petName": "Buddy",
+    "petSpecies": "Beagle",
+    "petGender": "Male",
+    "microchipNumber": "MCH-789-123",
+    "causeOfLoss": "Illness",
+    "lossReserve": "1500.50"
+}

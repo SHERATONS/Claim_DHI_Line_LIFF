@@ -1,0 +1,12 @@
+{
+    "policyId": "001XXXXXXXXXXXXXXX",
+    "contactId": "003XXXXXXXXXXXXXXX",
+    "notifierName": "Somchai Hull",
+    "phone": "0809990000",
+    "email": "captain@test.com",
+    "incidentDateTime": "2026-03-17 17:00",
+    "lossPlace": "Phuket Marina",
+    "boatName": "Sea Breeze",
+    "causeOfLoss": "Engine Fire",
+    "lossReserve": "300000"
+}
