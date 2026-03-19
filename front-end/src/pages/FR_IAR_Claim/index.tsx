@@ -172,6 +172,7 @@ export default function ClaimForm() {
       const payload = {
         policyNo: policyNumber,
         contactId: idcard,
+        policyHolder: policyHolder,
         notifierName: values.notifierName,
         phone: values.phone,
         email: values.email || undefined,

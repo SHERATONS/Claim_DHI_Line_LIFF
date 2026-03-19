@@ -18,6 +18,7 @@ func NewFRIARClaimRepo(c *Client) *FRIARClaimRepo { return &FRIARClaimRepo{clien
 type sfFRIARClaimBody struct {
 	PolicyId         string `json:"policyId"`
 	ContactId        string `json:"contactId"`
+	PolicyHolder     string `json:"policyHolder"`
 	NotifierName     string `json:"notifierName"`
 	Phone            string `json:"phone"`
 	Email            string `json:"email"`
@@ -58,6 +59,7 @@ func (r *FRIARClaimRepo) Submit(ctx context.Context, req claim.FRIARClaimRequest
 	sfBody := sfFRIARClaimBody{
 		PolicyId:         policy.PolicyId,
 		ContactId:        req.ContactId,
+		PolicyHolder:     req.PolicyHolder,
 		NotifierName:     req.NotifierName,
 		Phone:            req.Phone,
 		Email:            req.Email,
@@ -72,7 +74,7 @@ func (r *FRIARClaimRepo) Submit(ctx context.Context, req claim.FRIARClaimRequest
 		CauseOfLoss:      req.CauseOfLoss,
 	}
 
-	reqURL := fmt.Sprintf("%s/services/apexrest/liff/claims", r.client.cfg.InstanceURL)
+	reqURL := fmt.Sprintf("%s/services/apexrest/liff/claims/friar", r.client.cfg.InstanceURL)
 	jsonBody, err := json.Marshal(sfBody)
 	if err != nil {
 		return nil, fmt.Errorf("failed to marshal request body: %w", err)

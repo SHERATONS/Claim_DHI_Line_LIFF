@@ -2,7 +2,7 @@ package handler
 
 import (
 	"errors"
-	"io"
+	"fmt"
 	"net/http"
 
 	"github.com/SHERATONS/backend/internal/domain"
@@ -11,11 +11,12 @@ import (
 )
 
 type UploadHandler struct {
-	repo domain.UploadRepository
+	repo    domain.UploadRepository
+	storage domain.StorageRepository
 }
 
-func NewUploadHandler(repo domain.UploadRepository) *UploadHandler {
-	return &UploadHandler{repo: repo}
+func NewUploadHandler(repo domain.UploadRepository, storage domain.StorageRepository) *UploadHandler {
+	return &UploadHandler{repo: repo, storage: storage}
 }
 
 func (h *UploadHandler) UploadBinary(c *gin.Context) {
@@ -31,19 +32,31 @@ func (h *UploadHandler) UploadBinary(c *gin.Context) {
 		return
 	}
 
-	fileData, err := io.ReadAll(c.Request.Body)
-	if err != nil {
-		httpresponse.BadRequest(c, errors.New("failed to read request body"))
-		return
-	}
 	defer c.Request.Body.Close()
 
-	if len(fileData) == 0 {
-		httpresponse.BadRequest(c, errors.New("empty file data"))
+	mimeType := c.GetHeader("Content-Type")
+	if mimeType == "" {
+		mimeType = "application/octet-stream" // Default fallback for raw binary
+	}
+	objectName := fmt.Sprintf("claims/%s/%s", caseId, fileName)
+
+	// 1. Stream the incoming connection straight to GCS (Zero-RAM buffer bypass)
+	if _, err := h.storage.StreamFile(c.Request.Context(), objectName, c.Request.Body, mimeType); err != nil {
+		httpresponse.InternalError(c, fmt.Errorf("failed to stream file directly to GCS: %w", err))
 		return
 	}
 
-	result, err := h.repo.UploadBinary(c.Request.Context(), fileName, caseId, fileData)
+	// 2. Safely read it back into memory from GCS to send to Salesforce. 
+	// This ensures the master copy is safely persisted and network transfers
+	// succeed before any heavy RAM is allocated!
+	sfFileData, err := h.storage.ReadFile(c.Request.Context(), objectName)
+	if err != nil {
+		httpresponse.InternalError(c, fmt.Errorf("failed to read from GCS backup: %w", err))
+		return
+	}
+
+	// 3. Upload to Salesforce using the safe memory buffer
+	result, err := h.repo.UploadBinary(c.Request.Context(), fileName, caseId, sfFileData)
 	if err != nil {
 		httpresponse.InternalError(c, err)
 		return
