@@ -6,11 +6,15 @@ import (
 )
 
 type Config struct {
-	Port           string
-	SkipLiffAuth   bool
-	LiffChannelID  string
-	AllowedOrigins []string
-	Salesforce     SalesforceConfig
+	Port            string
+	SkipLiffAuth    bool
+	LiffChannelID   string
+	AllowedOrigins  []string
+	Salesforce      SalesforceConfig
+	VertexProjectID string
+	VertexLocation  string
+	SystemPrompt    string
+	GCSBucketName   string
 }
 
 type SalesforceConfig struct {
@@ -54,5 +58,9 @@ func Load() Config {
 			ClientSecret: os.Getenv("SF_CLIENT_SECRET"),
 			InstanceURL:  os.Getenv("SF_INSTANCE_URL"),
 		},
+		VertexProjectID: os.Getenv("VERTEX_PROJECT_ID"),
+		VertexLocation:  os.Getenv("VERTEX_LOCATION"),
+		SystemPrompt:    os.Getenv("SYSTEM_PROMPT"),
+		GCSBucketName:   os.Getenv("GCS_BUCKET_NAME"),
 	}
 }

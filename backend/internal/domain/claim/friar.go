@@ -6,6 +6,7 @@ import "context"
 type FRIARClaimRequest struct {
 	PolicyNo         string
 	ContactId        string
+	PolicyHolder     string
 	NotifierName     string
 	Phone            string
 	Email            string

@@ -14,17 +14,20 @@ import (
 )
 
 type FRIARClaimHandler struct {
-	repo   claim.FRIARClaimRepository
-	upload domain.UploadRepository
+	repo    claim.FRIARClaimRepository
+	upload  domain.UploadRepository
+	storage domain.StorageRepository
+	gen     domain.ContentGenerator
 }
 
-func NewFRIARClaimHandler(repo claim.FRIARClaimRepository, upload domain.UploadRepository) *FRIARClaimHandler {
-	return &FRIARClaimHandler{repo: repo, upload: upload}
+func NewFRIARClaimHandler(repo claim.FRIARClaimRepository, upload domain.UploadRepository, storage domain.StorageRepository, gen domain.ContentGenerator) *FRIARClaimHandler {
+	return &FRIARClaimHandler{repo: repo, upload: upload, storage: storage, gen: gen}
 }
 
 type friarClaimForm struct {
 	PolicyNo         string `form:"policyNo" binding:"required"`
 	ContactId        string `form:"contactId"`
+	PolicyHolder     string `form:"policyHolder"`
 	NotifierName     string `form:"notifierName" binding:"required"`
 	Phone            string `form:"phone" binding:"required"`
 	Email            string `form:"email"`
@@ -61,6 +64,7 @@ func (h *FRIARClaimHandler) Handle(c *gin.Context) {
 	req := claim.FRIARClaimRequest{
 		PolicyNo:         form.PolicyNo,
 		ContactId:        form.ContactId,
+		PolicyHolder:     form.PolicyHolder,
 		NotifierName:     form.NotifierName,
 		Phone:            form.Phone,
 		Email:            form.Email,
@@ -75,6 +79,63 @@ func (h *FRIARClaimHandler) Handle(c *gin.Context) {
 		CauseOfLoss:      form.CauseOfLoss,
 	}
 
+	var uploadErrors []string
+	var fileInputs []domain.FileInput
+
+	if err := c.Request.ParseMultipartForm(32 << 20); err == nil {
+		files := c.Request.MultipartForm.File["files"]
+		if len(files) == 0 {
+			files = c.Request.MultipartForm.File["file"]
+		}
+
+		if len(files) > 0 {
+			for _, fileHeader := range files {
+				file, err := fileHeader.Open()
+				if err != nil {
+					uploadErrors = append(uploadErrors, "failed to open "+fileHeader.Filename+": "+err.Error())
+					continue
+				}
+				fileData, err := io.ReadAll(file)
+				file.Close()
+				if err != nil {
+					uploadErrors = append(uploadErrors, "failed to read "+fileHeader.Filename+": "+err.Error())
+					continue
+				}
+
+				mimeType := http.DetectContentType(fileData)
+				fileInputs = append(fileInputs, domain.FileInput{
+					Data:     fileData,
+					MimeType: mimeType,
+					Filename: fileHeader.Filename,
+				})
+			}
+		}
+	}
+
+	renameMap := make(map[string]string)
+	if len(fileInputs) > 0 {
+		analysis, err := h.gen.AnalyzeClaim(c.Request.Context(), req, fileInputs)
+		if err != nil {
+			log.Printf("[FRIARClaim] AI Analysis failed: %v", err)
+		} else if analysis != nil {
+			appendStr := fmt.Sprintf("verification: PolicyNo %s, ContactId %s, PolicyHolder %s, summarize: %s",
+				analysis.Verification.PolicyNo,
+				analysis.Verification.ContactId,
+				analysis.Verification.PolicyHolder,
+				analysis.Summary)
+
+			if req.CauseOfLoss != "" {
+				req.CauseOfLoss = fmt.Sprintf("%s, %s", req.CauseOfLoss, appendStr)
+			} else {
+				req.CauseOfLoss = appendStr
+			}
+
+			for _, fn := range analysis.FileNames {
+				renameMap[fn.Original] = fn.New
+			}
+		}
+	}
+
 	result, err := h.repo.Submit(c.Request.Context(), req)
 	if err != nil {
 		log.Printf("[FRIARClaim] ERROR: %v", err)
@@ -82,32 +143,26 @@ func (h *FRIARClaimHandler) Handle(c *gin.Context) {
 		return
 	}
 
-	// Upload files if claim succeeded and we have a case ID.
-	if result.Success && result.CaseId != "" {
-		if err := c.Request.ParseMultipartForm(32 << 20); err == nil {
-			if files := c.Request.MultipartForm.File["files"]; len(files) > 0 {
-				var uploadErrors []string
-				for _, fileHeader := range files {
-					file, err := fileHeader.Open()
-					if err != nil {
-						uploadErrors = append(uploadErrors, "failed to open "+fileHeader.Filename+": "+err.Error())
-						continue
-					}
-					fileData, err := io.ReadAll(file)
-					file.Close()
-					if err != nil {
-						uploadErrors = append(uploadErrors, "failed to read "+fileHeader.Filename+": "+err.Error())
-						continue
-					}
-					if _, err = h.upload.UploadBinary(c.Request.Context(), fileHeader.Filename, result.CaseId, fileData); err != nil {
-						uploadErrors = append(uploadErrors, "failed to upload "+fileHeader.Filename+": "+err.Error())
-					}
-				}
-				if len(uploadErrors) > 0 {
-					result.Error = "Claim submitted, but some files failed to upload: " + strings.Join(uploadErrors, "; ")
-					log.Printf("[FRIARClaim] Partial success: %s", result.Error)
-				}
+	if result.Success && result.CaseId != "" && len(fileInputs) > 0 {
+		for _, f := range fileInputs {
+			finalName := f.Filename
+			if newName, ok := renameMap[f.Filename]; ok && newName != "" {
+				finalName = newName
 			}
+
+			objectName := fmt.Sprintf("claims/%s/%s", result.CaseId, finalName)
+			if _, err := h.storage.SaveFile(c.Request.Context(), objectName, f.Data, f.MimeType); err != nil {
+				uploadErrors = append(uploadErrors, "failed to backup "+finalName+" to GCS: "+err.Error())
+			}
+
+			if _, err := h.upload.UploadBinary(c.Request.Context(), finalName, result.CaseId, f.Data); err != nil {
+				uploadErrors = append(uploadErrors, "failed to upload "+finalName+": "+err.Error())
+			}
+		}
+
+		if len(uploadErrors) > 0 {
+			result.Error = "Claim submitted, but some files failed to upload: " + strings.Join(uploadErrors, "; ")
+			log.Printf("[FRIARClaim] Partial success: %s", result.Error)
 		}
 	}
 

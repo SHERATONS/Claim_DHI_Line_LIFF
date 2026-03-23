@@ -21,6 +21,7 @@ type HandlerSet struct {
 	Location    *handler.LocationHandler
 	Policy      *handler.PolicyHandler
 	Upload      *handler.UploadHandler
+  Content     *handler.ContentHandler
 }
 
 // SetupRoutes registers all application routes.
@@ -34,6 +35,8 @@ func (s *GinServer) SetupRoutes(deps Dependencies) {
 	auth.Use(deps.AuthMiddleware)
 	auth.POST("/api/upload", deps.Handlers.Upload.UploadBinary)
 	auth.POST("/api/policy", deps.Handlers.Policy.LookupPolicy)
+  auth.POST("/api/generate", deps.Handlers.Content.GenerateContent)
+	auth.POST("/api/test/analyze", deps.Handlers.Content.AnalyzeClaimTest)
 	auth.POST("/api/claims/friar", deps.Handlers.FRIAR.Handle)
 	auth.POST("/api/claims/ahdeath", deps.Handlers.AHDeath.Handle)
 	auth.POST("/api/claims/carearcpm", deps.Handlers.CAREARCPM.Handle)

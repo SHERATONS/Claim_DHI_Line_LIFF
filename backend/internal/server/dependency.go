@@ -1,10 +1,15 @@
 package server
 
 import (
+	"context"
+	"log"
+
 	"github.com/SHERATONS/backend/internal/config"
 	"github.com/SHERATONS/backend/internal/handler"
+	"github.com/SHERATONS/backend/internal/infra/gcs"
 	"github.com/SHERATONS/backend/internal/infra/line"
 	"github.com/SHERATONS/backend/internal/infra/salesforce"
+	"github.com/SHERATONS/backend/internal/infra/vertex"
 	"github.com/SHERATONS/backend/internal/middleware"
 	"github.com/gin-gonic/gin"
 )
@@ -26,15 +31,27 @@ func BuildDependencies(cfg config.Config) Dependencies {
 	// Shared Salesforce client
 	sfClient := salesforce.NewClient(cfg.Salesforce)
 
+	// GCS Client
+	gcsClient, err := gcs.NewClient(context.Background(), cfg.GCSBucketName)
+	if err != nil {
+		log.Fatalf("Failed to initialize GCS client: %v", err)
+	}
+
 	// Repositories
 	uploadRepo := salesforce.NewUploadRepo(sfClient)
 
 	// Auth
 	lineAuth := line.NewAuthVerifier(cfg.LiffChannelID)
 
+	// Vertex AI Content Generator
+	geminiClient, err := vertex.NewGeminiClient(context.Background(), cfg.VertexProjectID, cfg.VertexLocation, cfg.SystemPrompt)
+	if err != nil {
+		log.Fatalf("Failed to initialize Vertex AI client: %v", err)
+	}
+
 	return Dependencies{
 		Handlers: HandlerSet{
-			FRIAR:       handler.NewFRIARClaimHandler(salesforce.NewFRIARClaimRepo(sfClient), uploadRepo),
+			FRIAR:    handler.NewFRIARClaimHandler(salesforce.NewFRIARClaimRepo(sfClient), uploadRepo, gcsClient, geminiClient),
 			AHDeath:     handler.NewAHDeathClaimHandler(salesforce.NewAHDeathClaimRepo(sfClient), uploadRepo),
 			CAREARCPM:   handler.NewCAREARCPMClaimHandler(salesforce.NewCAREARCPMClaimRepo(sfClient), uploadRepo),
 			Drone:       handler.NewDroneClaimHandler(salesforce.NewDroneClaimRepo(sfClient), uploadRepo),
@@ -47,7 +64,8 @@ func BuildDependencies(cfg config.Config) Dependencies {
 			TA:          handler.NewTAClaimHandler(salesforce.NewTAClaimRepo(sfClient), uploadRepo),
 			Location:    handler.NewLocationHandler(salesforce.NewLocationRepo(sfClient)),
 			Policy:      handler.NewPolicyHandler(salesforce.NewPolicyRepo(sfClient)),
-			Upload:      handler.NewUploadHandler(uploadRepo),
+			Upload:   handler.NewUploadHandler(uploadRepo, gcsClient),
+      Content:  handler.NewContentHandler(geminiClient),
 		},
 		AuthMiddleware: middleware.Auth(lineAuth, cfg.SkipLiffAuth),
 	}
