@@ -1,0 +1,14 @@
+{
+  "policyNo": "POL-MCL-001",
+  "contactId": "CONT007",
+  "notifierName": "Trucking Co.",
+  "phone": "0869990000",
+  "email": "trucking@example.com",
+  "incidentDateTime": "2023-10-22T22:30:00Z",
+  "lossPlace": "Highway 1",
+  "vehicleName": "Isuzu Truck",
+  "vehiclePlate": "12-3456 BKK",
+  "transportationType": "Road Freight",
+  "causeOfLoss": "Traffic accident resulting in cargo damage",
+  "lossReserve": "120000"
+}

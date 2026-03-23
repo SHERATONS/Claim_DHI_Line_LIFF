@@ -91,6 +91,7 @@ export function ClaimDetailsSection({
                 error={errors.driverName}
                 required
                 placeholder="- ชื่อผู้ขับขี่ -"
+                readOnly
             />
 
             <Input

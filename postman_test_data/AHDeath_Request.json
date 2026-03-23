@@ -1,0 +1,13 @@
+{
+  "policyNo": "POL-AH-001",
+  "contactId": "CONT002",
+  "notifierName": "Jane Smith",
+  "phone": "0898765432",
+  "email": "jane.smith@example.com",
+  "accidentDate": "2023-10-25T08:30:00Z",
+  "treatmentDate": "2023-10-25T09:00:00Z",
+  "treatmentHospital": "Bangkok General Hospital",
+  "causeOfIllness": "Traffic accident",
+  "lossPlace": "Rama 9 Road",
+  "lossReserve": "1000000"
+}

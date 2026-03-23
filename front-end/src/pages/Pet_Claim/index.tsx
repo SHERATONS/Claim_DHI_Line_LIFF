@@ -32,7 +32,6 @@ interface FormValues {
     incidentDateTime: string;
     petName: string;
     petType: string;
-    petTypeOther: string;
     petSpecies: string;
     petGender: string;
     petAge: string;
@@ -49,7 +48,6 @@ interface FormErrors {
     incidentDateTime?: string;
     petName?: string;
     petType?: string;
-    petTypeOther?: string;
     petSpecies?: string;
     petGender?: string;
     petAge?: string;
@@ -74,7 +72,6 @@ export default function ClaimForm() {
         incidentDateTime: '',
         petName: '',
         petType: '',
-        petTypeOther: '',
         petSpecies: '',
         petGender: '',
         petAge: '',
@@ -144,7 +141,6 @@ export default function ClaimForm() {
     };
 
     const buildPetType = (): string => {
-        if (values.petType === '006') return values.petTypeOther || 'อื่นๆ';
         const petTypeItem = PET_TYPES.find(p => p.value === values.petType);
         return petTypeItem ? petTypeItem.label : '';
     };
@@ -194,7 +190,7 @@ export default function ClaimForm() {
             });
             allFiles.forEach((file) => formData.append('files', file));
 
-            const result = await submitClaim(formData, token);
+            const result = await submitClaim('/api/claims/pet', formData, token);
 
             if (!result.caseId) {
                 throw new Error('ไม่ได้รับหมายเลขเคส');
@@ -266,7 +262,6 @@ export default function ClaimForm() {
                             incidentDateTime: values.incidentDateTime,
                             petName: values.petName,
                             petType: values.petType,
-                            petTypeOther: values.petTypeOther,
                             petSpecies: values.petSpecies,
                             petGender: values.petGender,
                             petAge: values.petAge,
@@ -279,7 +274,6 @@ export default function ClaimForm() {
                             incidentDateTime: errors.incidentDateTime,
                             petName: errors.petName,
                             petType: errors.petType,
-                            petTypeOther: errors.petTypeOther,
                             petSpecies: errors.petSpecies,
                             petGender: errors.petGender,
                             petAge: errors.petAge,

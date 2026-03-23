@@ -1,0 +1,11 @@
+{
+  "policyNo": "POL-OTH-001",
+  "contactId": "CONT009",
+  "notifierName": "Various Inc.",
+  "phone": "0843334444",
+  "email": "various@example.com",
+  "incidentDateTime": "2023-10-26T14:00:00Z",
+  "lossPlace": "Office Building",
+  "causeOfLoss": "Water leak damaged servers",
+  "lossReserve": "300000"
+}

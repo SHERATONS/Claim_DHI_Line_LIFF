@@ -1,0 +1,16 @@
+{
+  "policyNo": "POL1234567",
+  "contactId": "CONT001",
+  "notifierName": "John Doe",
+  "phone": "0812345678",
+  "email": "john.doe@example.com",
+  "incidentDateTime": "2023-10-27T10:00:00Z",
+  "lossPlace": "Bangkok",
+  "fullAddress": "123 Sukhumvit, Bangkok",
+  "provinceId": "10",
+  "districtId": "01",
+  "subdistrictId": "01",
+  "zipcode": "10110",
+  "lossReserve": "50000",
+  "causeOfLoss": "Fire damage to property"
+}

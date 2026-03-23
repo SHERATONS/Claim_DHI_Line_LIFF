@@ -84,21 +84,7 @@ global without sharing class LIFF_ClaimSubmitServiceMarineHull {
                 // --- Contact Handling ---
                 Contact notifierContact;
 
-                if (String.isNotBlank(contactId)) {
-                    // Use existing contact — update phone/email
-                    List<Contact> existingContacts = [
-                        SELECT Id, Name, Phone, Email
-                        FROM Contact
-                        WHERE Id = :contactId
-                        LIMIT 1
-                    ];
-                    if (!existingContacts.isEmpty()) {
-                        notifierContact = existingContacts[0];
-                        notifierContact.Phone = phone;
-                        notifierContact.Email = email;
-                        update notifierContact;
-                    }
-                } else if (policy.AccountId__c != null && String.isNotBlank(notifierName)) {
+                if (policy.AccountId__c != null && String.isNotBlank(notifierName)) {
                     // Search by name or create new
                     Map<String, String> parsedName = parseFullName(notifierName);
 

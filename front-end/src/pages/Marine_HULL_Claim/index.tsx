@@ -153,7 +153,7 @@ export default function ClaimForm() {
             });
             allFiles.forEach((file) => formData.append('files', file));
 
-            const result = await submitClaim(formData, token);
+            const result = await submitClaim('/api/claims/marinehull', formData, token);
 
             if (!result.caseId) {
                 throw new Error('ไม่ได้รับหมายเลขเคส');

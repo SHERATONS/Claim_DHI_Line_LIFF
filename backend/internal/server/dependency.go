@@ -52,10 +52,20 @@ func BuildDependencies(cfg config.Config) Dependencies {
 	return Dependencies{
 		Handlers: HandlerSet{
 			FRIAR:    handler.NewFRIARClaimHandler(salesforce.NewFRIARClaimRepo(sfClient), uploadRepo, gcsClient, geminiClient),
-			Location: handler.NewLocationHandler(salesforce.NewLocationRepo(sfClient)),
-			Policy:   handler.NewPolicyHandler(salesforce.NewPolicyRepo(sfClient)),
+			AHDeath:     handler.NewAHDeathClaimHandler(salesforce.NewAHDeathClaimRepo(sfClient), uploadRepo),
+			CAREARCPM:   handler.NewCAREARCPMClaimHandler(salesforce.NewCAREARCPMClaimRepo(sfClient), uploadRepo),
+			Drone:       handler.NewDroneClaimHandler(salesforce.NewDroneClaimRepo(sfClient), uploadRepo),
+			Golf:        handler.NewGolfClaimHandler(salesforce.NewGolfClaimRepo(sfClient), uploadRepo),
+			MarineCargo: handler.NewMarineCargoClaimHandler(salesforce.NewMarineCargoClaimRepo(sfClient), uploadRepo),
+			MarineCL:    handler.NewMarineCLClaimHandler(salesforce.NewMarineCLClaimRepo(sfClient), uploadRepo),
+			MarineHull:  handler.NewMarineHullClaimHandler(salesforce.NewMarineHullClaimRepo(sfClient), uploadRepo),
+			Other:       handler.NewOtherClaimHandler(salesforce.NewOtherClaimRepo(sfClient), uploadRepo),
+			Pet:         handler.NewPetClaimHandler(salesforce.NewPetClaimRepo(sfClient), uploadRepo),
+			TA:          handler.NewTAClaimHandler(salesforce.NewTAClaimRepo(sfClient), uploadRepo),
+			Location:    handler.NewLocationHandler(salesforce.NewLocationRepo(sfClient)),
+			Policy:      handler.NewPolicyHandler(salesforce.NewPolicyRepo(sfClient)),
 			Upload:   handler.NewUploadHandler(uploadRepo, gcsClient),
-			Content:  handler.NewContentHandler(geminiClient),
+      Content:  handler.NewContentHandler(geminiClient),
 		},
 		AuthMiddleware: middleware.Auth(lineAuth, cfg.SkipLiffAuth),
 	}
