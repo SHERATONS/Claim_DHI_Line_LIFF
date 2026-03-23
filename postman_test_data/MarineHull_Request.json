@@ -1,0 +1,12 @@
+{
+  "policyNo": "POL-MH-001",
+  "contactId": "CONT008",
+  "notifierName": "Captain Hook",
+  "phone": "0851112222",
+  "email": "captain@sea.com",
+  "incidentDateTime": "2023-10-10T05:00:00Z",
+  "lossPlace": "Gulf of Thailand",
+  "boatName": "The Pearl",
+  "causeOfLoss": "Engine failure and fire",
+  "lossReserve": "800000"
+}

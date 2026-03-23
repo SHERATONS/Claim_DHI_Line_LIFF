@@ -11,7 +11,6 @@ interface ClaimDetailsSectionProps {
         incidentDateTime: string;
         petName: string;
         petType: string;
-        petTypeOther?: string;
         petSpecies: string;
         petGender: string;
         petAge: string;
@@ -24,7 +23,6 @@ interface ClaimDetailsSectionProps {
         incidentDateTime?: string;
         petName?: string;
         petType?: string;
-        petTypeOther?: string;
         petSpecies?: string;
         petGender?: string;
         petAge?: string;
@@ -92,20 +90,6 @@ export function ClaimDetailsSection({
                 required
                 placeholder="- เลือกประเภทสัตว์เลี้ยง -"
             />
-
-            {values.petType === '006' && (
-                <div className="mt-3">
-                    <Input
-                        id="petTypeOther"
-                        label="ระบุประเภทสัตว์เลี้ยง (อื่นๆ)"
-                        value={values.petTypeOther || ''}
-                        onChange={(e) => onChange('petTypeOther', e.target.value)}
-                        error={errors.petTypeOther}
-                        required
-                        placeholder="- ระบุประเภทสัตว์เลี้ยง -"
-                    />
-                </div>
-            )}
 
             <Input
                 id="petName"

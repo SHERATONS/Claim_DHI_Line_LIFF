@@ -72,7 +72,7 @@ func (r *FRIARClaimRepo) Submit(ctx context.Context, req claim.FRIARClaimRequest
 		CauseOfLoss:      req.CauseOfLoss,
 	}
 
-	reqURL := fmt.Sprintf("%s/services/apexrest/liff/claims", r.client.cfg.InstanceURL)
+	reqURL := fmt.Sprintf("%s/services/apexrest/liff/claims/friar", r.client.cfg.InstanceURL)
 	jsonBody, err := json.Marshal(sfBody)
 	if err != nil {
 		return nil, fmt.Errorf("failed to marshal request body: %w", err)

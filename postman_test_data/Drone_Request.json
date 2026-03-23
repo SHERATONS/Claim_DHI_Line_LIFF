@@ -1,0 +1,13 @@
+{
+  "policyNo": "POL-DRN-001",
+  "contactId": "CONT004",
+  "notifierName": "Sky Cam",
+  "phone": "0813334444",
+  "email": "skycam@example.com",
+  "incidentDateTime": "2023-10-05T16:45:00Z",
+  "lossPlace": "Public Park",
+  "driverName": "Alice View",
+  "droneModel": "DJI Mavic 3",
+  "causeOfLoss": "Bird collision",
+  "lossReserve": "45000"
+}

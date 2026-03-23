@@ -1,0 +1,12 @@
+{
+  "policyNo": "POL-GLF-001",
+  "contactId": "CONT005",
+  "notifierName": "Tiger Woods",
+  "phone": "0895556666",
+  "email": "tiger@example.com",
+  "incidentDateTime": "2023-10-15T09:00:00Z",
+  "lossPlace": "Pattaya Country Club",
+  "golferName": "Tiger Woods",
+  "causeOfLoss": "Hole in one celebration damages",
+  "lossReserve": "10000"
+}

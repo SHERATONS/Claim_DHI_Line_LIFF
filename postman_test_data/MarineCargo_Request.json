@@ -1,0 +1,14 @@
+{
+  "policyNo": "POL-MC-001",
+  "contactId": "CONT006",
+  "notifierName": "Logistics Pro",
+  "phone": "0887778888",
+  "email": "logistics@shipping.com",
+  "incidentDateTime": "2023-10-18T11:20:00Z",
+  "lossPlace": "Laem Chabang Port",
+  "vehicleName": "Cargo Ship X",
+  "vehiclePlate": "IMO 1234567",
+  "transportationType": "Sea Freight",
+  "causeOfLoss": "Container dropped during loading",
+  "lossReserve": "500000"
+}

@@ -368,10 +368,6 @@ export const petSchema = baseClaimSchema.extend({
     .string()
     .min(1, 'กรุณาเลือกประเภทสัตว์เลี้ยง'),
 
-  petTypeOther: z
-    .string()
-    .optional(),
-
   petSpecies: z
     .string()
     .optional()
@@ -421,15 +417,6 @@ export const petSchema = baseClaimSchema.extend({
     }),
 
   lossReserve: positiveAmount,
-}).superRefine((data, ctx) => {
-  // Validate petTypeOther if petType is '006' (Others)
-  if (data.petType === '006' && !data.petTypeOther) {
-    ctx.addIssue({
-      code: 'custom',
-      path: ['petTypeOther'],
-      message: 'กรุณาระบุประเภทสัตว์เลี้ยง (อื่นๆ)',
-    });
-  }
 });
 
 // 5. Marine HULL

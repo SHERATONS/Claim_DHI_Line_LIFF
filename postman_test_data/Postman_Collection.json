@@ -1,0 +1,962 @@
+{
+  "info": {
+    "name": "Line LIFF Claims API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Submit FRIAR Claim",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer YOUR_LIFF_TOKEN_HERE"
+          }
+        ],
+        "body": {
+          "mode": "formdata",
+          "formdata": [
+            {
+              "key": "policyNo",
+              "value": "POL1234567",
+              "type": "text"
+            },
+            {
+              "key": "contactId",
+              "value": "CONT001",
+              "type": "text"
+            },
+            {
+              "key": "notifierName",
+              "value": "John Doe",
+              "type": "text"
+            },
+            {
+              "key": "phone",
+              "value": "0812345678",
+              "type": "text"
+            },
+            {
+              "key": "email",
+              "value": "john.doe@example.com",
+              "type": "text"
+            },
+            {
+              "key": "incidentDateTime",
+              "value": "2023-10-27T10:00:00Z",
+              "type": "text"
+            },
+            {
+              "key": "lossPlace",
+              "value": "Bangkok",
+              "type": "text"
+            },
+            {
+              "key": "fullAddress",
+              "value": "123 Sukhumvit, Bangkok",
+              "type": "text"
+            },
+            {
+              "key": "provinceId",
+              "value": "10",
+              "type": "text"
+            },
+            {
+              "key": "districtId",
+              "value": "01",
+              "type": "text"
+            },
+            {
+              "key": "subdistrictId",
+              "value": "01",
+              "type": "text"
+            },
+            {
+              "key": "zipcode",
+              "value": "10110",
+              "type": "text"
+            },
+            {
+              "key": "lossReserve",
+              "value": "50000",
+              "type": "text"
+            },
+            {
+              "key": "causeOfLoss",
+              "value": "Fire damage to property",
+              "type": "text"
+            }
+          ]
+        },
+        "url": {
+          "raw": "{{base_url}}/api/claims/friar",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "claims",
+            "friar"
+          ]
+        }
+      }
+    },
+    {
+      "name": "Submit AHDeath Claim",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer YOUR_LIFF_TOKEN_HERE"
+          }
+        ],
+        "body": {
+          "mode": "formdata",
+          "formdata": [
+            {
+              "key": "policyNo",
+              "value": "POL-AH-001",
+              "type": "text"
+            },
+            {
+              "key": "contactId",
+              "value": "CONT002",
+              "type": "text"
+            },
+            {
+              "key": "notifierName",
+              "value": "Jane Smith",
+              "type": "text"
+            },
+            {
+              "key": "phone",
+              "value": "0898765432",
+              "type": "text"
+            },
+            {
+              "key": "email",
+              "value": "jane.smith@example.com",
+              "type": "text"
+            },
+            {
+              "key": "accidentDate",
+              "value": "2023-10-25T08:30:00Z",
+              "type": "text"
+            },
+            {
+              "key": "treatmentDate",
+              "value": "2023-10-25T09:00:00Z",
+              "type": "text"
+            },
+            {
+              "key": "treatmentHospital",
+              "value": "Bangkok General Hospital",
+              "type": "text"
+            },
+            {
+              "key": "causeOfIllness",
+              "value": "Traffic accident",
+              "type": "text"
+            },
+            {
+              "key": "lossPlace",
+              "value": "Rama 9 Road",
+              "type": "text"
+            },
+            {
+              "key": "lossReserve",
+              "value": "1000000",
+              "type": "text"
+            }
+          ]
+        },
+        "url": {
+          "raw": "{{base_url}}/api/claims/ahdeath",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "claims",
+            "ahdeath"
+          ]
+        }
+      }
+    },
+    {
+      "name": "Submit CAREARCPM Claim",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer YOUR_LIFF_TOKEN_HERE"
+          }
+        ],
+        "body": {
+          "mode": "formdata",
+          "formdata": [
+            {
+              "key": "policyNo",
+              "value": "POL-CAR-001",
+              "type": "text"
+            },
+            {
+              "key": "contactId",
+              "value": "CONT003",
+              "type": "text"
+            },
+            {
+              "key": "notifierName",
+              "value": "Bob Builder",
+              "type": "text"
+            },
+            {
+              "key": "phone",
+              "value": "0801112222",
+              "type": "text"
+            },
+            {
+              "key": "email",
+              "value": "bob@construction.com",
+              "type": "text"
+            },
+            {
+              "key": "incidentDateTime",
+              "value": "2023-10-20T14:15:00Z",
+              "type": "text"
+            },
+            {
+              "key": "lossPlace",
+              "value": "Construction Site A",
+              "type": "text"
+            },
+            {
+              "key": "provinceId",
+              "value": "10",
+              "type": "text"
+            },
+            {
+              "key": "districtId",
+              "value": "02",
+              "type": "text"
+            },
+            {
+              "key": "subdistrictId",
+              "value": "03",
+              "type": "text"
+            },
+            {
+              "key": "projectTitle",
+              "value": "New Condo Project",
+              "type": "text"
+            },
+            {
+              "key": "contractorName",
+              "value": "BuildIt Co.",
+              "type": "text"
+            },
+            {
+              "key": "causeOfLoss",
+              "value": "Crane collapsed",
+              "type": "text"
+            },
+            {
+              "key": "lossReserve",
+              "value": "250000",
+              "type": "text"
+            }
+          ]
+        },
+        "url": {
+          "raw": "{{base_url}}/api/claims/carearcpm",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "claims",
+            "carearcpm"
+          ]
+        }
+      }
+    },
+    {
+      "name": "Submit Drone Claim",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer YOUR_LIFF_TOKEN_HERE"
+          }
+        ],
+        "body": {
+          "mode": "formdata",
+          "formdata": [
+            {
+              "key": "policyNo",
+              "value": "POL-DRN-001",
+              "type": "text"
+            },
+            {
+              "key": "contactId",
+              "value": "CONT004",
+              "type": "text"
+            },
+            {
+              "key": "notifierName",
+              "value": "Sky Cam",
+              "type": "text"
+            },
+            {
+              "key": "phone",
+              "value": "0813334444",
+              "type": "text"
+            },
+            {
+              "key": "email",
+              "value": "skycam@example.com",
+              "type": "text"
+            },
+            {
+              "key": "incidentDateTime",
+              "value": "2023-10-05T16:45:00Z",
+              "type": "text"
+            },
+            {
+              "key": "lossPlace",
+              "value": "Public Park",
+              "type": "text"
+            },
+            {
+              "key": "driverName",
+              "value": "Alice View",
+              "type": "text"
+            },
+            {
+              "key": "droneModel",
+              "value": "DJI Mavic 3",
+              "type": "text"
+            },
+            {
+              "key": "causeOfLoss",
+              "value": "Bird collision",
+              "type": "text"
+            },
+            {
+              "key": "lossReserve",
+              "value": "45000",
+              "type": "text"
+            }
+          ]
+        },
+        "url": {
+          "raw": "{{base_url}}/api/claims/drone",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "claims",
+            "drone"
+          ]
+        }
+      }
+    },
+    {
+      "name": "Submit Golf Claim",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer YOUR_LIFF_TOKEN_HERE"
+          }
+        ],
+        "body": {
+          "mode": "formdata",
+          "formdata": [
+            {
+              "key": "policyNo",
+              "value": "POL-GLF-001",
+              "type": "text"
+            },
+            {
+              "key": "contactId",
+              "value": "CONT005",
+              "type": "text"
+            },
+            {
+              "key": "notifierName",
+              "value": "Tiger Woods",
+              "type": "text"
+            },
+            {
+              "key": "phone",
+              "value": "0895556666",
+              "type": "text"
+            },
+            {
+              "key": "email",
+              "value": "tiger@example.com",
+              "type": "text"
+            },
+            {
+              "key": "incidentDateTime",
+              "value": "2023-10-15T09:00:00Z",
+              "type": "text"
+            },
+            {
+              "key": "lossPlace",
+              "value": "Pattaya Country Club",
+              "type": "text"
+            },
+            {
+              "key": "golferName",
+              "value": "Tiger Woods",
+              "type": "text"
+            },
+            {
+              "key": "causeOfLoss",
+              "value": "Hole in one celebration damages",
+              "type": "text"
+            },
+            {
+              "key": "lossReserve",
+              "value": "10000",
+              "type": "text"
+            }
+          ]
+        },
+        "url": {
+          "raw": "{{base_url}}/api/claims/golf",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "claims",
+            "golf"
+          ]
+        }
+      }
+    },
+    {
+      "name": "Submit MarineCargo Claim",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer YOUR_LIFF_TOKEN_HERE"
+          }
+        ],
+        "body": {
+          "mode": "formdata",
+          "formdata": [
+            {
+              "key": "policyNo",
+              "value": "POL-MC-001",
+              "type": "text"
+            },
+            {
+              "key": "contactId",
+              "value": "CONT006",
+              "type": "text"
+            },
+            {
+              "key": "notifierName",
+              "value": "Logistics Pro",
+              "type": "text"
+            },
+            {
+              "key": "phone",
+              "value": "0887778888",
+              "type": "text"
+            },
+            {
+              "key": "email",
+              "value": "logistics@shipping.com",
+              "type": "text"
+            },
+            {
+              "key": "incidentDateTime",
+              "value": "2023-10-18T11:20:00Z",
+              "type": "text"
+            },
+            {
+              "key": "lossPlace",
+              "value": "Laem Chabang Port",
+              "type": "text"
+            },
+            {
+              "key": "vehicleName",
+              "value": "Cargo Ship X",
+              "type": "text"
+            },
+            {
+              "key": "vehiclePlate",
+              "value": "IMO 1234567",
+              "type": "text"
+            },
+            {
+              "key": "transportationType",
+              "value": "Sea Freight",
+              "type": "text"
+            },
+            {
+              "key": "causeOfLoss",
+              "value": "Container dropped during loading",
+              "type": "text"
+            },
+            {
+              "key": "lossReserve",
+              "value": "500000",
+              "type": "text"
+            }
+          ]
+        },
+        "url": {
+          "raw": "{{base_url}}/api/claims/marinecargo",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "claims",
+            "marinecargo"
+          ]
+        }
+      }
+    },
+    {
+      "name": "Submit MarineCL Claim",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer YOUR_LIFF_TOKEN_HERE"
+          }
+        ],
+        "body": {
+          "mode": "formdata",
+          "formdata": [
+            {
+              "key": "policyNo",
+              "value": "POL-MCL-001",
+              "type": "text"
+            },
+            {
+              "key": "contactId",
+              "value": "CONT007",
+              "type": "text"
+            },
+            {
+              "key": "notifierName",
+              "value": "Trucking Co.",
+              "type": "text"
+            },
+            {
+              "key": "phone",
+              "value": "0869990000",
+              "type": "text"
+            },
+            {
+              "key": "email",
+              "value": "trucking@example.com",
+              "type": "text"
+            },
+            {
+              "key": "incidentDateTime",
+              "value": "2023-10-22T22:30:00Z",
+              "type": "text"
+            },
+            {
+              "key": "lossPlace",
+              "value": "Highway 1",
+              "type": "text"
+            },
+            {
+              "key": "vehicleName",
+              "value": "Isuzu Truck",
+              "type": "text"
+            },
+            {
+              "key": "vehiclePlate",
+              "value": "12-3456 BKK",
+              "type": "text"
+            },
+            {
+              "key": "transportationType",
+              "value": "Road Freight",
+              "type": "text"
+            },
+            {
+              "key": "causeOfLoss",
+              "value": "Traffic accident resulting in cargo damage",
+              "type": "text"
+            },
+            {
+              "key": "lossReserve",
+              "value": "120000",
+              "type": "text"
+            }
+          ]
+        },
+        "url": {
+          "raw": "{{base_url}}/api/claims/marinecl",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "claims",
+            "marinecl"
+          ]
+        }
+      }
+    },
+    {
+      "name": "Submit MarineHull Claim",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer YOUR_LIFF_TOKEN_HERE"
+          }
+        ],
+        "body": {
+          "mode": "formdata",
+          "formdata": [
+            {
+              "key": "policyNo",
+              "value": "POL-MH-001",
+              "type": "text"
+            },
+            {
+              "key": "contactId",
+              "value": "CONT008",
+              "type": "text"
+            },
+            {
+              "key": "notifierName",
+              "value": "Captain Hook",
+              "type": "text"
+            },
+            {
+              "key": "phone",
+              "value": "0851112222",
+              "type": "text"
+            },
+            {
+              "key": "email",
+              "value": "captain@sea.com",
+              "type": "text"
+            },
+            {
+              "key": "incidentDateTime",
+              "value": "2023-10-10T05:00:00Z",
+              "type": "text"
+            },
+            {
+              "key": "lossPlace",
+              "value": "Gulf of Thailand",
+              "type": "text"
+            },
+            {
+              "key": "boatName",
+              "value": "The Pearl",
+              "type": "text"
+            },
+            {
+              "key": "causeOfLoss",
+              "value": "Engine failure and fire",
+              "type": "text"
+            },
+            {
+              "key": "lossReserve",
+              "value": "800000",
+              "type": "text"
+            }
+          ]
+        },
+        "url": {
+          "raw": "{{base_url}}/api/claims/marinehull",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "claims",
+            "marinehull"
+          ]
+        }
+      }
+    },
+    {
+      "name": "Submit Other Claim",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer YOUR_LIFF_TOKEN_HERE"
+          }
+        ],
+        "body": {
+          "mode": "formdata",
+          "formdata": [
+            {
+              "key": "policyNo",
+              "value": "POL-OTH-001",
+              "type": "text"
+            },
+            {
+              "key": "contactId",
+              "value": "CONT009",
+              "type": "text"
+            },
+            {
+              "key": "notifierName",
+              "value": "Various Inc.",
+              "type": "text"
+            },
+            {
+              "key": "phone",
+              "value": "0843334444",
+              "type": "text"
+            },
+            {
+              "key": "email",
+              "value": "various@example.com",
+              "type": "text"
+            },
+            {
+              "key": "incidentDateTime",
+              "value": "2023-10-26T14:00:00Z",
+              "type": "text"
+            },
+            {
+              "key": "lossPlace",
+              "value": "Office Building",
+              "type": "text"
+            },
+            {
+              "key": "causeOfLoss",
+              "value": "Water leak damaged servers",
+              "type": "text"
+            },
+            {
+              "key": "lossReserve",
+              "value": "300000",
+              "type": "text"
+            }
+          ]
+        },
+        "url": {
+          "raw": "{{base_url}}/api/claims/other",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "claims",
+            "other"
+          ]
+        }
+      }
+    },
+    {
+      "name": "Submit Pet Claim",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer YOUR_LIFF_TOKEN_HERE"
+          }
+        ],
+        "body": {
+          "mode": "formdata",
+          "formdata": [
+            {
+              "key": "policyNo",
+              "value": "POL-PET-001",
+              "type": "text"
+            },
+            {
+              "key": "contactId",
+              "value": "CONT010",
+              "type": "text"
+            },
+            {
+              "key": "notifierName",
+              "value": "Sarah Conner",
+              "type": "text"
+            },
+            {
+              "key": "phone",
+              "value": "0835556666",
+              "type": "text"
+            },
+            {
+              "key": "email",
+              "value": "sarah@example.com",
+              "type": "text"
+            },
+            {
+              "key": "incidentDateTime",
+              "value": "2023-10-21T18:00:00Z",
+              "type": "text"
+            },
+            {
+              "key": "lossPlace",
+              "value": "Veterinary Clinic",
+              "type": "text"
+            },
+            {
+              "key": "petName",
+              "value": "Buddy",
+              "type": "text"
+            },
+            {
+              "key": "petType",
+              "value": "Dog",
+              "type": "text"
+            },
+            {
+              "key": "petTypeOther",
+              "value": "",
+              "type": "text"
+            },
+            {
+              "key": "petSpecies",
+              "value": "Golden Retriever",
+              "type": "text"
+            },
+            {
+              "key": "petGender",
+              "value": "Male",
+              "type": "text"
+            },
+            {
+              "key": "microchipNumber",
+              "value": "985141000000001",
+              "type": "text"
+            },
+            {
+              "key": "causeOfLoss",
+              "value": "Stomach infection treatment",
+              "type": "text"
+            },
+            {
+              "key": "lossReserve",
+              "value": "8500",
+              "type": "text"
+            }
+          ]
+        },
+        "url": {
+          "raw": "{{base_url}}/api/claims/pet",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "claims",
+            "pet"
+          ]
+        }
+      }
+    },
+    {
+      "name": "Submit TA Claim",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer YOUR_LIFF_TOKEN_HERE"
+          }
+        ],
+        "body": {
+          "mode": "formdata",
+          "formdata": [
+            {
+              "key": "policyNo",
+              "value": "POL-TA-001",
+              "type": "text"
+            },
+            {
+              "key": "contactId",
+              "value": "CONT011",
+              "type": "text"
+            },
+            {
+              "key": "notifierName",
+              "value": "Traveler Joe",
+              "type": "text"
+            },
+            {
+              "key": "phone",
+              "value": "0827778888",
+              "type": "text"
+            },
+            {
+              "key": "email",
+              "value": "joe@travel.com",
+              "type": "text"
+            },
+            {
+              "key": "incidentDateTime",
+              "value": "2023-10-12T09:30:00Z",
+              "type": "text"
+            },
+            {
+              "key": "accidentPlace",
+              "value": "Tokyo, Japan",
+              "type": "text"
+            },
+            {
+              "key": "flightNumber",
+              "value": "JL123",
+              "type": "text"
+            },
+            {
+              "key": "causeOfLoss",
+              "value": "Baggage delay for 24 hours",
+              "type": "text"
+            },
+            {
+              "key": "lossReserve",
+              "value": "5000",
+              "type": "text"
+            }
+          ]
+        },
+        "url": {
+          "raw": "{{base_url}}/api/claims/ta",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "claims",
+            "ta"
+          ]
+        }
+      }
+    }
+  ],
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:8080"
+    }
+  ]
+}

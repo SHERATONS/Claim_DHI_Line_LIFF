@@ -1,0 +1,17 @@
+{
+  "policyNo": "POL-PET-001",
+  "contactId": "CONT010",
+  "notifierName": "Sarah Conner",
+  "phone": "0835556666",
+  "email": "sarah@example.com",
+  "incidentDateTime": "2023-10-21T18:00:00Z",
+  "lossPlace": "Veterinary Clinic",
+  "petName": "Buddy",
+  "petType": "Dog",
+  "petTypeOther": "",
+  "petSpecies": "Golden Retriever",
+  "petGender": "Male",
+  "microchipNumber": "985141000000001",
+  "causeOfLoss": "Stomach infection treatment",
+  "lossReserve": "8500"
+}

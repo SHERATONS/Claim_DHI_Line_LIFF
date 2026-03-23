@@ -1,0 +1,16 @@
+{
+  "policyNo": "POL-CAR-001",
+  "contactId": "CONT003",
+  "notifierName": "Bob Builder",
+  "phone": "0801112222",
+  "email": "bob@construction.com",
+  "incidentDateTime": "2023-10-20T14:15:00Z",
+  "lossPlace": "Construction Site A",
+  "provinceId": "10",
+  "districtId": "02",
+  "subdistrictId": "03",
+  "projectTitle": "New Condo Project",
+  "contractorName": "BuildIt Co.",
+  "causeOfLoss": "Crane collapsed",
+  "lossReserve": "250000"
+}

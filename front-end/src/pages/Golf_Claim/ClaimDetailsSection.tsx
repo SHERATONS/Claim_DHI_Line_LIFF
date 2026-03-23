@@ -64,6 +64,7 @@ export function ClaimDetailsSection({
                 error={errors.Golfer}
                 required
                 placeholder="- ชื่อ Golfer -"
+                readOnly
             />
 
             <Input

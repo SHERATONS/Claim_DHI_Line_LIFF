@@ -1,0 +1,12 @@
+{
+  "policyNo": "POL-TA-001",
+  "contactId": "CONT011",
+  "notifierName": "Traveler Joe",
+  "phone": "0827778888",
+  "email": "joe@travel.com",
+  "incidentDateTime": "2023-10-12T09:30:00Z",
+  "accidentPlace": "Tokyo, Japan",
+  "flightNumber": "JL123",
+  "causeOfLoss": "Baggage delay for 24 hours",
+  "lossReserve": "5000"
+}

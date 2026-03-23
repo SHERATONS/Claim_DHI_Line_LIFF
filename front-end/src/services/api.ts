@@ -125,11 +125,12 @@ async function withRetry<T>(
  * Does NOT retry on 5xx to prevent duplicate Salesforce cases.
  */
 export async function submitClaim(
+  endpoint: string,
   data: Record<string, unknown> | FormData,
   liffToken: string,
   options: { signal?: AbortSignal } = {}
 ): Promise<SubmitClaimResponse> {
-  const response = await apiClient.post<SubmitClaimResponse>('/api/claims/friar', data, {
+  const response = await apiClient.post<SubmitClaimResponse>(endpoint, data, {
     headers: { Authorization: `Bearer ${liffToken}` },
     signal: options.signal,
   });
