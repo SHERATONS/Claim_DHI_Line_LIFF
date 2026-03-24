@@ -13,7 +13,7 @@ type AHDeathClaimRequest struct {
 	AccidentDate      string
 	TreatmentDate     string
 	TreatmentHospital string
-	CauseOfIllness    string
+	CauseOfLoss       string
 	LossReserve       string
 }
 

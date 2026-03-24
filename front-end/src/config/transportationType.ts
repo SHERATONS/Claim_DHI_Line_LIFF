@@ -4,7 +4,7 @@ export interface TransportationType {
 }
 
 export const TRANSPORTATION_TYPE: TransportationType[] = [
-    { value: '001', label: 'ทางเรือ' },
-    { value: '002', label: 'ทางอากาศ' },
-    { value: '003', label: 'ทางบก' },
+    { value: 'ทางเรือ', label: 'ทางเรือ' },
+    { value: 'ทางอากาศ', label: 'ทางอากาศ' },
+    { value: 'ทางบก', label: 'ทางบก' },
 ];

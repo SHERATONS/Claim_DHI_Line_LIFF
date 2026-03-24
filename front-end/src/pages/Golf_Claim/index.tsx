@@ -20,7 +20,7 @@ import { ClaimDetailsSection } from './ClaimDetailsSection';
 const MOCK_POLICY_DATA = {
     policyNumber: '14009-001-200000026',
     policyHolder: 'ก้องภพ ไกรแก้ว',
-    idcard: '1-1234-56789-01-2',
+    idcard: '1219900960846',
 };
 
 interface FormValues {
@@ -119,7 +119,7 @@ export default function ClaimForm() {
 
         if (!validateForm()) return;
 
-        const token = getAccessToken();
+        const token = getAccessToken() ?? (import.meta.env.DEV ? 'dev-bypass' : null);
         if (!token) {
             setSubmitState((s) => ({ ...s, error: 'ไม่สามารถเชื่อมต่อ LINE ได้ กรุณาลองใหม่อีกครั้ง' }));
             return;
@@ -138,7 +138,7 @@ export default function ClaimForm() {
                 email: values.email || undefined,
                 incidentDateTime,
                 lossPlace: values.lossPlace,
-                Golfer: values.Golfer,
+                golfer: values.Golfer,
                 causeOfLoss: values.causeOfLoss,
                 lossReserve: values.lossReserve ? parseFloat(values.lossReserve.replace(/,/g, '')) : undefined,
             };

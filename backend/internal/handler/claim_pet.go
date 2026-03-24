@@ -14,12 +14,14 @@ import (
 )
 
 type PetClaimHandler struct {
-	repo   claim.PetClaimRepository
-	upload domain.UploadRepository
+	repo    claim.PetClaimRepository
+	upload  domain.UploadRepository
+	storage domain.StorageRepository
+	gen     domain.ContentGenerator
 }
 
-func NewPetClaimHandler(repo claim.PetClaimRepository, upload domain.UploadRepository) *PetClaimHandler {
-	return &PetClaimHandler{repo: repo, upload: upload}
+func NewPetClaimHandler(repo claim.PetClaimRepository, upload domain.UploadRepository, storage domain.StorageRepository, gen domain.ContentGenerator) *PetClaimHandler {
+	return &PetClaimHandler{repo: repo, upload: upload, storage: storage, gen: gen}
 }
 
 type petClaimForm struct {
@@ -77,6 +79,64 @@ func (h *PetClaimHandler) Handle(c *gin.Context) {
 		LossReserve:      form.LossReserve,
 	}
 
+	var uploadErrors []string
+	var fileInputs []domain.FileInput
+
+	if err := c.Request.ParseMultipartForm(32 << 20); err == nil {
+		files := c.Request.MultipartForm.File["files"]
+		if len(files) == 0 {
+			files = c.Request.MultipartForm.File["file"]
+		}
+
+		if len(files) > 0 {
+			for _, fileHeader := range files {
+				file, err := fileHeader.Open()
+				if err != nil {
+					uploadErrors = append(uploadErrors, "failed to open "+fileHeader.Filename+": "+err.Error())
+					continue
+				}
+				fileData, err := io.ReadAll(file)
+				file.Close()
+				if err != nil {
+					uploadErrors = append(uploadErrors, "failed to read "+fileHeader.Filename+": "+err.Error())
+					continue
+				}
+
+				mimeType := http.DetectContentType(fileData)
+				fileInputs = append(fileInputs, domain.FileInput{
+					Data:     fileData,
+					MimeType: mimeType,
+					Filename: fileHeader.Filename,
+				})
+			}
+		}
+	}
+
+	renameMap := make(map[string]string)
+	if len(fileInputs) > 0 {
+		analysis, err := h.gen.AnalyzeClaim(c.Request.Context(), req, fileInputs)
+		if err != nil {
+			log.Printf("[PetClaim] AI Analysis failed: %v", err)
+		} else if analysis != nil {
+			verificationStr := fmt.Sprintf("PolicyNo %s, ContactId %s, PolicyHolder %s",
+				analysis.Verification.PolicyNo,
+				analysis.Verification.ContactId,
+				analysis.Verification.PolicyHolder)
+
+			var newCauseOfLoss string
+			if req.CauseOfLoss != "" {
+				newCauseOfLoss = fmt.Sprintf("original:\n%s\nverification:\n%s\nsummary:\n%s", req.CauseOfLoss, verificationStr, analysis.Summary)
+			} else {
+				newCauseOfLoss = fmt.Sprintf("verification:\n%s\nsummary:\n%s", verificationStr, analysis.Summary)
+			}
+			req.CauseOfLoss = newCauseOfLoss
+
+			for _, fn := range analysis.FileNames {
+				renameMap[fn.Original] = fn.New
+			}
+		}
+	}
+
 	result, err := h.repo.Submit(c.Request.Context(), req)
 	if err != nil {
 		log.Printf("[PetClaim] ERROR: %v", err)
@@ -84,32 +144,26 @@ func (h *PetClaimHandler) Handle(c *gin.Context) {
 		return
 	}
 
-	// Upload files if claim succeeded and we have a case ID.
-	if result.Success && result.CaseId != "" {
-		if err := c.Request.ParseMultipartForm(32 << 20); err == nil {
-			if files := c.Request.MultipartForm.File["files"]; len(files) > 0 {
-				var uploadErrors []string
-				for _, fileHeader := range files {
-					file, err := fileHeader.Open()
-					if err != nil {
-						uploadErrors = append(uploadErrors, "failed to open "+fileHeader.Filename+": "+err.Error())
-						continue
-					}
-					fileData, err := io.ReadAll(file)
-					file.Close()
-					if err != nil {
-						uploadErrors = append(uploadErrors, "failed to read "+fileHeader.Filename+": "+err.Error())
-						continue
-					}
-					if _, err = h.upload.UploadBinary(c.Request.Context(), fileHeader.Filename, result.CaseId, fileData); err != nil {
-						uploadErrors = append(uploadErrors, "failed to upload "+fileHeader.Filename+": "+err.Error())
-					}
-				}
-				if len(uploadErrors) > 0 {
-					result.Error = "Claim submitted, but some files failed to upload: " + strings.Join(uploadErrors, "; ")
-					log.Printf("[PetClaim] Partial success: %s", result.Error)
-				}
+	if result.Success && result.CaseId != "" && len(fileInputs) > 0 {
+		for _, f := range fileInputs {
+			finalName := f.Filename
+			if newName, ok := renameMap[f.Filename]; ok && newName != "" {
+				finalName = newName
 			}
+
+			objectName := fmt.Sprintf("claims/%s/%s", result.CaseId, finalName)
+			if _, err := h.storage.SaveFile(c.Request.Context(), objectName, f.Data, f.MimeType); err != nil {
+				uploadErrors = append(uploadErrors, "failed to backup "+finalName+" to GCS: "+err.Error())
+			}
+
+			if _, err := h.upload.UploadBinary(c.Request.Context(), finalName, result.CaseId, f.Data); err != nil {
+				uploadErrors = append(uploadErrors, "failed to upload "+finalName+": "+err.Error())
+			}
+		}
+
+		if len(uploadErrors) > 0 {
+			result.Error = "Claim submitted, but some files failed to upload: " + strings.Join(uploadErrors, "; ")
+			log.Printf("[PetClaim] Partial success: %s", result.Error)
 		}
 	}
 

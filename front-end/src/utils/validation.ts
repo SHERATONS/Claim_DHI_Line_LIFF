@@ -681,10 +681,10 @@ export const ahDeathSchema = z.object({
       }
     }),
 
-  causeOfIllness: z
+  causeOfLoss: z
     .string()
-    .min(1, 'กรุณาระบุสาเหตุของความเจ็นป่วย')
-    .max(200, 'สาเหตุของความเจ็บป่วยยาวเกินไป')
+    .min(1, 'กรุณาระบุสาเหตุของความเจ็บป่วย/เสียชีวิต')
+    .max(200, 'สาเหตุของความเจ็บป่วยหรือเสียชีวิตยาวเกินไป')
     .superRefine((val, ctx) => {
       const result = validateSafeText(val);
       if (!result.valid) {

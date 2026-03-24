@@ -24,7 +24,7 @@ type sfAHDeathClaimBody struct {
 	IncidentDateTime  string `json:"incidentDateTime"`
 	TreatmentDate     string `json:"treatmentDate"`
 	TreatmentHospital string `json:"treatmentHospital"`
-	CauseOfDeath      string `json:"causeOfDeath"`
+	CauseOfLoss       string `json:"causeOfLoss"`
 	LossPlace         string `json:"lossPlace"`
 	LossReserve       string `json:"lossReserve"`
 }
@@ -57,7 +57,7 @@ func (r *AHDeathClaimRepo) Submit(ctx context.Context, req claim.AHDeathClaimReq
 		IncidentDateTime:  req.AccidentDate, // Apex treats incidentDateTime or accidentDate
 		TreatmentDate:     req.TreatmentDate,
 		TreatmentHospital: req.TreatmentHospital,
-		CauseOfDeath:      req.CauseOfIllness, // Maps frontend causeOfIllness to Apex causeOfDeath
+		CauseOfLoss:       req.CauseOfLoss, // Maps frontend causeOfLoss to Apex causeOfLoss
 		LossPlace:         req.LossPlace,
 		LossReserve:       req.LossReserve,
 	}

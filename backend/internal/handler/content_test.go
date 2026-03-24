@@ -9,7 +9,6 @@ import (
 	"testing"
 
 	"github.com/SHERATONS/backend/internal/domain"
-	"github.com/SHERATONS/backend/internal/domain/claim"
 	"github.com/SHERATONS/backend/internal/handler"
 	"github.com/gin-gonic/gin"
 )
@@ -25,7 +24,7 @@ func (m *mockContentGenerator) GenerateContent(ctx context.Context, files []doma
 	return "", nil
 }
 
-func (m *mockContentGenerator) AnalyzeClaim(ctx context.Context, form claim.FRIARClaimRequest, files []domain.FileInput) (*domain.ClaimAnalysisResult, error) {
+func (m *mockContentGenerator) AnalyzeClaim(ctx context.Context, form any, files []domain.FileInput) (*domain.ClaimAnalysisResult, error) {
 	return &domain.ClaimAnalysisResult{}, nil
 }
 

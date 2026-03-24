@@ -46,7 +46,7 @@ func (h *UploadHandler) UploadBinary(c *gin.Context) {
 		return
 	}
 
-	// 2. Safely read it back into memory from GCS to send to Salesforce. 
+	// 2. Safely read it back into memory from GCS to send to Salesforce.
 	// This ensures the master copy is safely persisted and network transfers
 	// succeed before any heavy RAM is allocated!
 	sfFileData, err := h.storage.ReadFile(c.Request.Context(), objectName)

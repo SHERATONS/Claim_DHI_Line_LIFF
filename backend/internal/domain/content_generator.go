@@ -2,8 +2,6 @@ package domain
 
 import (
 	"context"
-
-	"github.com/SHERATONS/backend/internal/domain/claim"
 )
 
 type FileInput struct {
@@ -31,5 +29,5 @@ type ClaimAnalysisResult struct {
 
 type ContentGenerator interface {
 	GenerateContent(ctx context.Context, files []FileInput) (string, error)
-	AnalyzeClaim(ctx context.Context, form claim.FRIARClaimRequest, files []FileInput) (*ClaimAnalysisResult, error)
+	AnalyzeClaim(ctx context.Context, form any, files []FileInput) (*ClaimAnalysisResult, error)
 }

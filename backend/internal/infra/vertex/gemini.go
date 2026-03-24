@@ -7,7 +7,6 @@ import (
 	"strings"
 
 	"github.com/SHERATONS/backend/internal/domain"
-	"github.com/SHERATONS/backend/internal/domain/claim"
 	"google.golang.org/genai"
 )
 
@@ -83,12 +82,14 @@ func (g *GeminiClient) GenerateContent(ctx context.Context, files []domain.FileI
 	return fmt.Sprintf("%v", part), nil
 }
 
-func (g *GeminiClient) AnalyzeClaim(ctx context.Context, form claim.FRIARClaimRequest, files []domain.FileInput) (*domain.ClaimAnalysisResult, error) {
+func (g *GeminiClient) AnalyzeClaim(ctx context.Context, form any, files []domain.FileInput) (*domain.ClaimAnalysisResult, error) {
 	if len(files) == 0 {
 		return nil, fmt.Errorf("no files provided for analysis")
 	}
 
 	var parts []*genai.Part
+
+	formBytes, _ := json.MarshalIndent(form, "", "  ")
 
 	// 1. Add instructions and form data
 	prompt := fmt.Sprintf(`Analyze all provided claim documents.
@@ -127,14 +128,14 @@ STRICT RULES:
 5. If value is partially visible or unclear → "Not Found"
 6. JSON must be syntactically valid (no trailing commas)
 7. The documents are primarily in Thai. You must proactively read, comprehend, and extract Thai text, Thai names, and Thai identifiers for verification.
+8. For files categorized as "p" (policy documents), dynamically analyze the visual content of the document to generate a short, descriptive title in English (e.g., "id_card", "policy_schedule", "passport").
+9. For "p" category files, the "new" field in the JSON MUST be formatted exactly as "p_{title_generated_from_content}.{extension}".
 
-Frontend Form Data:
-- PolicyNo: %s
-- ContactId: %s
-- PolicyHolder: %s
+Frontend Form Data (JSON):
+%s
 
 Original File Names: 
-`, form.PolicyNo, form.ContactId, form.PolicyHolder)
+`, string(formBytes))
 
 	for _, f := range files {
 		prompt += fmt.Sprintf("- %s\n", f.Filename)

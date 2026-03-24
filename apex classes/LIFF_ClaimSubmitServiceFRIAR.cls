@@ -102,9 +102,11 @@ global without sharing class LIFF_ClaimSubmitServiceFRIAR {
                         ];
 
                         if (!existingContacts.isEmpty()) {
-                            notifierContact = existingContacts[0];
-                            notifierContact.Phone = phone;
-                            notifierContact.Email = email;
+                            notifierContact = new Contact(
+                                Id = existingContacts[0].Id,
+                                Phone = phone,
+                                Email = email
+                            );
                             update notifierContact;
                         } else {
                             notifierContact = new Contact();

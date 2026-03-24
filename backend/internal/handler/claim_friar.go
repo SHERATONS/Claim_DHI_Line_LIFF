@@ -118,17 +118,18 @@ func (h *FRIARClaimHandler) Handle(c *gin.Context) {
 		if err != nil {
 			log.Printf("[FRIARClaim] AI Analysis failed: %v", err)
 		} else if analysis != nil {
-			appendStr := fmt.Sprintf("verification: PolicyNo %s, ContactId %s, PolicyHolder %s, summarize: %s",
+			verificationStr := fmt.Sprintf("PolicyNo %s, ContactId %s, PolicyHolder %s",
 				analysis.Verification.PolicyNo,
 				analysis.Verification.ContactId,
-				analysis.Verification.PolicyHolder,
-				analysis.Summary)
+				analysis.Verification.PolicyHolder)
 
+			var newCauseOfLoss string
 			if req.CauseOfLoss != "" {
-				req.CauseOfLoss = fmt.Sprintf("%s, %s", req.CauseOfLoss, appendStr)
+				newCauseOfLoss = fmt.Sprintf("original:\n%s\nverification:\n%s\nsummary:\n%s", req.CauseOfLoss, verificationStr, analysis.Summary)
 			} else {
-				req.CauseOfLoss = appendStr
+				newCauseOfLoss = fmt.Sprintf("verification:\n%s\nsummary:\n%s", verificationStr, analysis.Summary)
 			}
+			req.CauseOfLoss = newCauseOfLoss
 
 			for _, fn := range analysis.FileNames {
 				renameMap[fn.Original] = fn.New
