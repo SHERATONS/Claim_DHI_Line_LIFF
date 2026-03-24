@@ -32,7 +32,7 @@ type golfClaimForm struct {
 	Email            string `form:"email"`
 	IncidentDateTime string `form:"incidentDateTime" binding:"required"`
 	LossPlace        string `form:"lossPlace"`
-	GolferName       string `form:"golfer"`
+	GolferName       string `form:"golfer" json:"golfer"`
 	CauseOfLoss      string `form:"causeOfLoss"`
 	LossReserve      string `form:"lossReserve"`
 }
