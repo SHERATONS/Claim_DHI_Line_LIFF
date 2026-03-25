@@ -28,6 +28,10 @@ func (m *mockContentGenerator) AnalyzeClaim(ctx context.Context, form any, files
 	return &domain.ClaimAnalysisResult{}, nil
 }
 
+func (m *mockContentGenerator) SearchFlightDetails(ctx context.Context, flightNumber string) (string, error) {
+	return "Mock Flight Details", nil
+}
+
 func setupTestServer() *gin.Engine {
 	gin.SetMode(gin.TestMode)
 	return gin.New()

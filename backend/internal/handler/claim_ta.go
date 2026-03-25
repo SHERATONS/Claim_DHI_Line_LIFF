@@ -127,6 +127,15 @@ func (h *TAClaimHandler) Handle(c *gin.Context) {
 		}
 	}
 
+	if req.FlightNumber != "" {
+		flightDetails, err := h.gen.SearchFlightDetails(c.Request.Context(), req.FlightNumber)
+		if err != nil {
+			log.Printf("[TAClaim] Flight Search failed: %v", err)
+		} else if flightDetails != "" {
+			req.CauseOfLoss = fmt.Sprintf("%s\n\nflight details:\n%s", req.CauseOfLoss, flightDetails)
+		}
+	}
+
 	result, err := h.repo.Submit(c.Request.Context(), req)
 	if err != nil {
 		log.Printf("[TAClaim] ERROR: %v", err)

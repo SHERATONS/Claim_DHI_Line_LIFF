@@ -30,4 +30,5 @@ type ClaimAnalysisResult struct {
 type ContentGenerator interface {
 	GenerateContent(ctx context.Context, files []FileInput) (string, error)
 	AnalyzeClaim(ctx context.Context, form any, files []FileInput) (*ClaimAnalysisResult, error)
+	SearchFlightDetails(ctx context.Context, flightNumber string) (string, error)
 }

@@ -132,3 +132,24 @@ func (h *ContentHandler) AnalyzeClaimTest(c *gin.Context) {
 		"data":    analysis,
 	})
 }
+
+func (h *ContentHandler) SearchFlightDetails(c *gin.Context) {
+	flightNumber := c.Query("flightNumber")
+	if flightNumber == "" {
+		httpresponse.BadRequest(c, errors.New("flightNumber is required"))
+		return
+	}
+
+	details, err := h.generator.SearchFlightDetails(c.Request.Context(), flightNumber)
+	if err != nil {
+		httpresponse.InternalError(c, err)
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"success": true,
+		"data": gin.H{
+			"details": details,
+		},
+	})
+}

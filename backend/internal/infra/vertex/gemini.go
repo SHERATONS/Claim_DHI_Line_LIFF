@@ -82,6 +82,41 @@ func (g *GeminiClient) GenerateContent(ctx context.Context, files []domain.FileI
 	return fmt.Sprintf("%v", part), nil
 }
 
+func (g *GeminiClient) SearchFlightDetails(ctx context.Context, flightNumber string) (string, error) {
+	if flightNumber == "" {
+		return "", nil
+	}
+
+	prompt := fmt.Sprintf("Search for real-time flight details for flight number: %s. Provide the departure city, arrival city, and scheduled/actual departure and arrival times. Be concise. If the flight number is invalid, not in a standard format, or no details are available, respond with: 'The flight number %s does not appear to be a standard format for which real-time flight details are readily available.'", flightNumber, flightNumber)
+
+	config := &genai.GenerateContentConfig{
+		Tools: []*genai.Tool{
+			{GoogleSearch: &genai.GoogleSearch{}},
+		},
+	}
+
+	content := &genai.Content{
+		Role:  "user",
+		Parts: []*genai.Part{{Text: prompt}},
+	}
+
+	// Use gemini-2.5-flash which is consistent with the rest of the project
+	resp, err := g.client.Models.GenerateContent(ctx, "gemini-2.5-flash", []*genai.Content{content}, config)
+	if err != nil {
+		return "", err
+	}
+
+	if len(resp.Candidates) == 0 || len(resp.Candidates[0].Content.Parts) == 0 {
+		return "No details found", nil
+	}
+
+	part := resp.Candidates[0].Content.Parts[0]
+	if part.Text != "" {
+		return part.Text, nil
+	}
+	return "No details found", nil
+}
+
 func (g *GeminiClient) AnalyzeClaim(ctx context.Context, form any, files []domain.FileInput) (*domain.ClaimAnalysisResult, error) {
 	if len(files) == 0 {
 		return nil, fmt.Errorf("no files provided for analysis")

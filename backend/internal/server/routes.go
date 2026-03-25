@@ -41,6 +41,7 @@ func (s *GinServer) SetupRoutes(deps Dependencies) {
 	auth.POST("/api/policy", deps.Handlers.Policy.LookupPolicy)
 	auth.POST("/api/generate", deps.Handlers.Content.GenerateContent)
 	auth.POST("/api/test/analyze", deps.Handlers.Content.AnalyzeClaimTest)
+	auth.GET("/api/test/flight-search", deps.Handlers.Content.SearchFlightDetails)
 	auth.POST("/api/claims/friar", deps.Handlers.FRIAR.Handle)
 	auth.POST("/api/claims/ahdeath", deps.Handlers.AHDeath.Handle)
 	auth.POST("/api/claims/carearcpm", deps.Handlers.CAREARCPM.Handle)
