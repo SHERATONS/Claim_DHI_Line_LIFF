@@ -19,7 +19,7 @@ import { InsuredInfoSection, PersonalDocumentUpload } from '@/components/feature
 const MOCK_POLICY_DATA = {
     policyNumber: '14020-114-210000161',
     policyHolder: 'นายทดสอบ ระบบเคลม',
-    idcard: '1-1234-56789-01-2',
+    idcard: '1219900960846',
 };
 
 interface FormValues {

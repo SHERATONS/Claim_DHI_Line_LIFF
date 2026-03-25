@@ -1,0 +1,7 @@
+# github.com/SHERATONS/backend/internal/handler
+internal\handler\line_webhook.go:101:19: undefined: linebot.FlexWeightBold
+internal\handler\line_webhook.go:102:19: undefined: linebot.FlexFontSizeSm
+internal\handler\line_webhook.go:110:17: undefined: linebot.FlexFontSizeXs
+internal\handler\line_webhook.go:128:20: undefined: linebot.FlexButtonStylePrimary
+internal\handler\line_webhook.go:129:20: undefined: linebot.FlexButtonHeightSm
+internal\handler\line_webhook.go:138:22: undefined: linebot.FlexBoxLayoutVertical

@@ -66,6 +66,8 @@ func BuildDependencies(cfg config.Config) Dependencies {
 			Policy:      handler.NewPolicyHandler(salesforce.NewPolicyRepo(sfClient)),
 			Upload:      handler.NewUploadHandler(uploadRepo, gcsClient),
 			Content:     handler.NewContentHandler(geminiClient),
+			Line:        handler.NewLineWebhookHandler(cfg.Line),
+			ExtraUpload: handler.NewExtraUploadHandler(uploadRepo, gcsClient, geminiClient),
 		},
 		AuthMiddleware: middleware.Auth(lineAuth, cfg.SkipLiffAuth),
 	}

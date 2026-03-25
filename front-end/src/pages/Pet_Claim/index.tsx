@@ -20,9 +20,9 @@ import { ClaimDetailsSection } from './ClaimDetailsSection';
 
 // Placeholder policy data — will be replaced by Loxley API integration.
 const MOCK_POLICY_DATA = {
-    policyNumber: '12001-108-050125235',
+    policyNumber: '14058-108-240004161',
     policyHolder: 'จิตสุชา ดาราเย็น',
-    idcard: '',
+    idcard: '1219900960846',
 };
 
 interface FormValues {

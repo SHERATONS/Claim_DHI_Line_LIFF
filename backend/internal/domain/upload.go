@@ -9,4 +9,5 @@ type UploadResult struct {
 
 type UploadRepository interface {
 	UploadBinary(ctx context.Context, fileName, caseId string, data []byte) (*UploadResult, error)
+	LookupCase(ctx context.Context, notificationNo string) (caseId, caseNumber string, err error)
 }

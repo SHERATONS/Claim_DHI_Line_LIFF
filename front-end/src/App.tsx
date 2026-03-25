@@ -12,6 +12,7 @@ import Golf_Claim from '@/pages/Golf_Claim';
 import TA_Claim from '@/pages/TA_Claim';
 import AH_Death_Claim from '@/pages/AH_Death_Claim';
 import Other_Claim from '@/pages/Other_Claim';
+import ExtraUpload from '@/pages/ExtraUpload';
 import NotFound from '@/pages/NotFound';
 
 function AppContent() {
@@ -44,6 +45,7 @@ function AppContent() {
       <Route path="/TAClaim" element={<TA_Claim />} />
       <Route path="/AHClaim" element={<AH_Death_Claim />} />
       <Route path="/OTHERClaim" element={<Other_Claim />} />
+      <Route path="/ExtraUpload" element={<ExtraUpload />} />
       <Route path="/404" element={<NotFound />} />
       <Route path="*" element={<Navigate to="/404" replace />} />
     </Routes>

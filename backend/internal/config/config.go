@@ -15,6 +15,14 @@ type Config struct {
 	VertexLocation  string
 	SystemPrompt    string
 	GCSBucketName   string
+	Line            LineConfig
+}
+
+type LineConfig struct {
+	ChannelSecret      string
+	ChannelAccessToken string
+	LiffChannelID      string
+	BackendURL         string
 }
 
 type SalesforceConfig struct {
@@ -50,8 +58,7 @@ func Load() Config {
 	return Config{
 		Port:           port,
 		SkipLiffAuth:   os.Getenv("SKIP_LIFF_AUTH") == "true",
-		LiffChannelID:  os.Getenv("LIFF_CHANNEL_ID"),
-		AllowedOrigins: allowedOrigins,
+		AllowedOrigins:  allowedOrigins,
 		Salesforce: SalesforceConfig{
 			TokenURL:     os.Getenv("SF_TOKEN_URL"),
 			ClientID:     os.Getenv("SF_CLIENT_ID"),
@@ -62,5 +69,11 @@ func Load() Config {
 		VertexLocation:  os.Getenv("VERTEX_LOCATION"),
 		SystemPrompt:    os.Getenv("SYSTEM_PROMPT"),
 		GCSBucketName:   os.Getenv("GCS_BUCKET_NAME"),
+		Line: LineConfig{
+			ChannelSecret:      os.Getenv("LINE_CHANNEL_SECRET"),
+			ChannelAccessToken: os.Getenv("LINE_CHANNEL_ACCESS_TOKEN"),
+			LiffChannelID:      os.Getenv("LIFF_CHANNEL_ID"),
+			BackendURL:         os.Getenv("BACKEND_URL"),
+		},
 	}
 }

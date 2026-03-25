@@ -20,7 +20,7 @@ import { ClaimDetailsSection } from './ClaimDetailsSection';
 const MOCK_POLICY_DATA = {
   policyNumber: '12001-860-200265456',
   policyHolder: 'ปิยะศิลป์ หุบชะบา',
-  idcard: '1-1234-56789-01-2',
+  idcard: '1219900960846',
 };
 
 interface FormValues {

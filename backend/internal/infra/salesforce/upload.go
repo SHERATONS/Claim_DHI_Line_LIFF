@@ -56,3 +56,41 @@ func (r *UploadRepo) UploadBinary(_ context.Context, fileName, caseId string, da
 		ContentVersionId:  resp.ContentVersionId,
 	}, nil
 }
+
+func (r *UploadRepo) LookupCase(ctx context.Context, notificationNo string) (string, string, error) {
+	reqURL := fmt.Sprintf("%s/services/apexrest/liff/claims/extra-upload?notificationNo=%s",
+		r.client.cfg.InstanceURL,
+		url.QueryEscape(notificationNo),
+	)
+
+	body, err := r.client.callSFAPI(func(accessToken string) (*http.Request, error) {
+		req, err := http.NewRequest("GET", reqURL, nil)
+		if err != nil {
+			return nil, err
+		}
+		req.Header.Set("Authorization", "Bearer "+accessToken)
+		return req, nil
+	})
+	if err != nil {
+		return "", "", err
+	}
+
+	var resp struct {
+		Success bool `json:"success"`
+		Data    struct {
+			CaseId     string `json:"caseId"`
+			CaseNumber string `json:"caseNumber"`
+		} `json:"data"`
+		Error string `json:"error,omitempty"`
+	}
+
+	if err := unmarshalSFResponse(body, &resp); err != nil {
+		return "", "", err
+	}
+
+	if !resp.Success {
+		return "", "", fmt.Errorf("salesforce error: %s", resp.Error)
+	}
+
+	return resp.Data.CaseId, resp.Data.CaseNumber, nil
+}

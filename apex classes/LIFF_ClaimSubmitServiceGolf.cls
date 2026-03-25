@@ -103,7 +103,7 @@ global with sharing class LIFF_ClaimSubmitServiceGolf {
                                 Phone = phone,
                                 Email = email
                             );
-                            update notifierContact;
+                            // update notifierContact; // Removed to fix Person Account 500 error
                         } else {
                             notifierContact = new Contact();
                             // Skip AccountId for Person Accounts
@@ -130,9 +130,11 @@ global with sharing class LIFF_ClaimSubmitServiceGolf {
 
                 // Policy and Account
                 c.Policy__c = policy.Id;
+                /*
                 if (policy.AccountId__c != null) {
                     c.AccountId = policy.AccountId__c;
                 }
+                */
 
                 // Record Type
                 List<RecordType> recordTypes = [

@@ -20,7 +20,7 @@ import { ClaimDetailsSection } from './ClaimDetailsSection';
 const MOCK_POLICY_DATA = {
     policyNumber: '13002-113-200004843',
     policyHolder: 'ธานินทร์ ทิพย์สงเคราะห์',
-    idcard: '1-1234-56789-01-2',
+    idcard: '1219900960846',
 };
 
 interface FormValues {

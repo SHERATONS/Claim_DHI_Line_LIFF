@@ -22,13 +22,17 @@ type HandlerSet struct {
 	Policy      *handler.PolicyHandler
 	Upload      *handler.UploadHandler
 	Content     *handler.ContentHandler
+	Line        *handler.LineWebhookHandler
+	ExtraUpload *handler.ExtraUploadHandler
 }
 
 // SetupRoutes registers all application routes.
 func (s *GinServer) SetupRoutes(deps Dependencies) {
 	// Public routes
 	s.engine.GET("/test", func(c *gin.Context) { c.String(200, "Hello World") })
+	s.engine.Static("/static", "./other/images")
 	s.engine.GET("/api/locations", deps.Handlers.Location.GetLocations)
+	s.engine.POST("/api/line/webhook", deps.Handlers.Line.Handle)
 
 	// Protected routes (LIFF auth required)
 	auth := s.engine.Group("/")
@@ -48,4 +52,5 @@ func (s *GinServer) SetupRoutes(deps Dependencies) {
 	auth.POST("/api/claims/other", deps.Handlers.Other.Handle)
 	auth.POST("/api/claims/pet", deps.Handlers.Pet.Handle)
 	auth.POST("/api/claims/ta", deps.Handlers.TA.Handle)
+	auth.POST("/api/extra-upload", deps.Handlers.ExtraUpload.Handle)
 }
