@@ -8,6 +8,7 @@ type FileInput struct {
 	Data     []byte
 	MimeType string
 	Filename string
+	GCSURI   string // Support for Vertex AI GCS sources (gs://...)
 }
 
 type FileRename struct {
@@ -22,9 +23,10 @@ type VerificationData struct {
 }
 
 type ClaimAnalysisResult struct {
-	FileNames    []FileRename     `json:"fileNames"`
-	Verification VerificationData `json:"verification"`
-	Summary      string           `json:"summary"`
+	FileNames     []FileRename     `json:"fileNames"`
+	Verification  VerificationData `json:"verification"`
+	ExtractedData VerificationData `json:"extractedData"`
+	Summary       string           `json:"summary"`
 }
 
 type ContentGenerator interface {

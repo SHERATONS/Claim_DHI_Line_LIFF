@@ -82,3 +82,7 @@ func (c *Client) ReadFile(ctx context.Context, objectName string) ([]byte, error
 	}
 	return data, nil
 }
+
+func (c *Client) GetBucketName() string {
+	return c.bucket
+}

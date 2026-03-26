@@ -1,27 +1,28 @@
 package handler
 
 import (
+	"context"
 	"fmt"
-	"io"
 	"log"
 	"net/http"
-	"strings"
+	"time"
 
 	"github.com/SHERATONS/backend/internal/domain"
 	"github.com/SHERATONS/backend/internal/domain/claim"
+	"github.com/SHERATONS/backend/internal/infra/gcs"
+	"github.com/SHERATONS/backend/internal/service"
 	"github.com/SHERATONS/backend/pkg/httpresponse"
 	"github.com/gin-gonic/gin"
 )
 
 type MarineCargoClaimHandler struct {
-	repo    claim.MarineCargoClaimRepository
-	upload  domain.UploadRepository
-	storage domain.StorageRepository
-	gen     domain.ContentGenerator
+	repo   claim.MarineCargoClaimRepository
+	worker *service.AsyncWorker
+	gcs    *gcs.Client
 }
 
-func NewMarineCargoClaimHandler(repo claim.MarineCargoClaimRepository, upload domain.UploadRepository, storage domain.StorageRepository, gen domain.ContentGenerator) *MarineCargoClaimHandler {
-	return &MarineCargoClaimHandler{repo: repo, upload: upload, storage: storage, gen: gen}
+func NewMarineCargoClaimHandler(repo claim.MarineCargoClaimRepository, worker *service.AsyncWorker, gcsClient *gcs.Client) *MarineCargoClaimHandler {
+	return &MarineCargoClaimHandler{repo: repo, worker: worker, gcs: gcsClient}
 }
 
 type marineCargoClaimForm struct {
@@ -73,8 +74,9 @@ func (h *MarineCargoClaimHandler) Handle(c *gin.Context) {
 		LossReserve:        form.LossReserve,
 	}
 
-	var uploadErrors []string
 	var fileInputs []domain.FileInput
+	timestamp := time.Now().Format("20060102_150405")
+	folderName := fmt.Sprintf("%s_%s", req.PolicyNo, timestamp)
 
 	if err := c.Request.ParseMultipartForm(32 << 20); err == nil {
 		files := c.Request.MultipartForm.File["files"]
@@ -82,55 +84,35 @@ func (h *MarineCargoClaimHandler) Handle(c *gin.Context) {
 			files = c.Request.MultipartForm.File["file"]
 		}
 
-		if len(files) > 0 {
-			for _, fileHeader := range files {
-				file, err := fileHeader.Open()
-				if err != nil {
-					uploadErrors = append(uploadErrors, "failed to open "+fileHeader.Filename+": "+err.Error())
-					continue
-				}
-				fileData, err := io.ReadAll(file)
-				file.Close()
-				if err != nil {
-					uploadErrors = append(uploadErrors, "failed to read "+fileHeader.Filename+": "+err.Error())
-					continue
-				}
-
-				mimeType := http.DetectContentType(fileData)
-				fileInputs = append(fileInputs, domain.FileInput{
-					Data:     fileData,
-					MimeType: mimeType,
-					Filename: fileHeader.Filename,
-				})
+		for _, fileHeader := range files {
+			file, err := fileHeader.Open()
+			if err != nil {
+				log.Printf("[MarineCargoClaim] Failed to open file: %v", err)
+				continue
 			}
+			defer file.Close()
+
+			mimeType := fileHeader.Header.Get("Content-Type")
+			if mimeType == "" {
+				mimeType = "application/octet-stream"
+			}
+
+			objectName := fmt.Sprintf("%s/%s", folderName, fileHeader.Filename)
+			gcsURI, err := h.gcs.StreamFile(c.Request.Context(), objectName, file, mimeType)
+			if err != nil {
+				log.Printf("[MarineCargoClaim] Failed to stream to GCS: %v", err)
+				continue
+			}
+
+			fileInputs = append(fileInputs, domain.FileInput{
+				MimeType: mimeType,
+				Filename: fileHeader.Filename,
+				GCSURI:   gcsURI,
+			})
 		}
 	}
 
-	renameMap := make(map[string]string)
-	if len(fileInputs) > 0 {
-		analysis, err := h.gen.AnalyzeClaim(c.Request.Context(), req, fileInputs)
-		if err != nil {
-			log.Printf("[MarineCargoClaim] AI Analysis failed: %v", err)
-		} else if analysis != nil {
-			verificationStr := fmt.Sprintf("PolicyNo %s, ContactId %s, PolicyHolder %s",
-				analysis.Verification.PolicyNo,
-				analysis.Verification.ContactId,
-				analysis.Verification.PolicyHolder)
-
-			var newCauseOfLoss string
-			if req.CauseOfLoss != "" {
-				newCauseOfLoss = fmt.Sprintf("original:\n%s\nverification:\n%s\nsummary:\n%s", req.CauseOfLoss, verificationStr, analysis.Summary)
-			} else {
-				newCauseOfLoss = fmt.Sprintf("verification:\n%s\nsummary:\n%s", verificationStr, analysis.Summary)
-			}
-			req.CauseOfLoss = newCauseOfLoss
-
-			for _, fn := range analysis.FileNames {
-				renameMap[fn.Original] = fn.New
-			}
-		}
-	}
-
+	// Submit text to Salesforce synchronously
 	result, err := h.repo.Submit(c.Request.Context(), req)
 	if err != nil {
 		log.Printf("[MarineCargoClaim] ERROR: %v", err)
@@ -138,27 +120,20 @@ func (h *MarineCargoClaimHandler) Handle(c *gin.Context) {
 		return
 	}
 
-	if result.Success && result.CaseId != "" && len(fileInputs) > 0 {
-		for _, f := range fileInputs {
-			finalName := f.Filename
-			if newName, ok := renameMap[f.Filename]; ok && newName != "" {
-				finalName = newName
-			}
-
-			objectName := fmt.Sprintf("claims/%s/%s", result.CaseId, finalName)
-			if _, err := h.storage.SaveFile(c.Request.Context(), objectName, f.Data, f.MimeType); err != nil {
-				uploadErrors = append(uploadErrors, "failed to backup "+finalName+" to GCS: "+err.Error())
-			}
-
-			if _, err := h.upload.UploadBinary(c.Request.Context(), finalName, result.CaseId, f.Data); err != nil {
-				uploadErrors = append(uploadErrors, "failed to upload "+finalName+": "+err.Error())
-			}
+	// Trigger background tasks if submission succeeded
+	if result.Success && result.CaseId != "" {
+		bgCtx := service.BackgroundContext{
+			NotificationNo: result.NotificationNo,
+			CaseId:         result.CaseId,
+			PolicyNo:       req.PolicyNo,
+			ContactId:      req.ContactId,
+			PolicyHolder:   form.NotifierName,
+			Files:          fileInputs,
 		}
 
-		if len(uploadErrors) > 0 {
-			result.Error = "Claim submitted, but some files failed to upload: " + strings.Join(uploadErrors, "; ")
-			log.Printf("[MarineCargoClaim] Partial success: %s", result.Error)
-		}
+		go func() {
+			h.worker.ProcessClaim(context.Background(), bgCtx)
+		}()
 	}
 
 	c.JSON(http.StatusOK, marineCargoClaimResponse{

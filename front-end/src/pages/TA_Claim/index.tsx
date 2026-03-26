@@ -17,7 +17,7 @@ import { InsuredInfoSection, PersonalDocumentUpload } from '@/components/feature
 
 // Placeholder policy data — will be replaced by Loxley API integration.
 const MOCK_POLICY_DATA = {
-    policyNumber: '14020-114-210000161',
+    policyNumber: '14003-151-200095621',
     policyHolder: 'นายทดสอบ ระบบเคลม',
     idcard: '1219900960846',
 };

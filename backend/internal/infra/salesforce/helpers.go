@@ -47,8 +47,8 @@ func (c *Client) callSFAPI(buildReq func(accessToken string) (*http.Request, err
 		}
 	}
 
-	if status != http.StatusOK {
-		log.Printf("[Salesforce] Non-200 response: status=%d body=%s", status, string(body))
+	if status != http.StatusOK && status != http.StatusNoContent {
+		log.Printf("[Salesforce] Non-success response: status=%d body=%s", status, string(body))
 		return nil, fmt.Errorf("salesforce returned status %d: %s", status, string(body))
 	}
 

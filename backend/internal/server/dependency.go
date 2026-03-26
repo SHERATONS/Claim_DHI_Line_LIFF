@@ -11,6 +11,7 @@ import (
 	"github.com/SHERATONS/backend/internal/infra/salesforce"
 	"github.com/SHERATONS/backend/internal/infra/vertex"
 	"github.com/SHERATONS/backend/internal/middleware"
+	"github.com/SHERATONS/backend/internal/service"
 	"github.com/gin-gonic/gin"
 )
 
@@ -49,19 +50,23 @@ func BuildDependencies(cfg config.Config) Dependencies {
 		log.Fatalf("Failed to initialize Vertex AI client: %v", err)
 	}
 
+	// Update Repo and Background Worker
+	updateRepo := salesforce.NewUpdateRepo(sfClient)
+	worker := service.NewAsyncWorker(geminiClient, gcsClient, updateRepo, uploadRepo)
+
 	return Dependencies{
 		Handlers: HandlerSet{
-			FRIAR:       handler.NewFRIARClaimHandler(salesforce.NewFRIARClaimRepo(sfClient), uploadRepo, gcsClient, geminiClient),
-			AHDeath:     handler.NewAHDeathClaimHandler(salesforce.NewAHDeathClaimRepo(sfClient), uploadRepo, gcsClient, geminiClient),
-			CAREARCPM:   handler.NewCAREARCPMClaimHandler(salesforce.NewCAREARCPMClaimRepo(sfClient), uploadRepo, gcsClient, geminiClient),
-			Drone:       handler.NewDroneClaimHandler(salesforce.NewDroneClaimRepo(sfClient), uploadRepo, gcsClient, geminiClient),
-			Golf:        handler.NewGolfClaimHandler(salesforce.NewGolfClaimRepo(sfClient), uploadRepo, gcsClient, geminiClient),
-			MarineCargo: handler.NewMarineCargoClaimHandler(salesforce.NewMarineCargoClaimRepo(sfClient), uploadRepo, gcsClient, geminiClient),
-			MarineCL:    handler.NewMarineCLClaimHandler(salesforce.NewMarineCLClaimRepo(sfClient), uploadRepo, gcsClient, geminiClient),
-			MarineHull:  handler.NewMarineHullClaimHandler(salesforce.NewMarineHullClaimRepo(sfClient), uploadRepo, gcsClient, geminiClient),
-			Other:       handler.NewOtherClaimHandler(salesforce.NewOtherClaimRepo(sfClient), uploadRepo, gcsClient, geminiClient),
-			Pet:         handler.NewPetClaimHandler(salesforce.NewPetClaimRepo(sfClient), uploadRepo, gcsClient, geminiClient),
-			TA:          handler.NewTAClaimHandler(salesforce.NewTAClaimRepo(sfClient), uploadRepo, gcsClient, geminiClient),
+			FRIAR:       handler.NewFRIARClaimHandler(salesforce.NewFRIARClaimRepo(sfClient), worker, gcsClient),
+			AHDeath:     handler.NewAHDeathClaimHandler(salesforce.NewAHDeathClaimRepo(sfClient), worker, gcsClient),
+			CAREARCPM:   handler.NewCAREARCPMClaimHandler(salesforce.NewCAREARCPMClaimRepo(sfClient), worker, gcsClient),
+			Drone:       handler.NewDroneClaimHandler(salesforce.NewDroneClaimRepo(sfClient), worker, gcsClient),
+			Golf:        handler.NewGolfClaimHandler(salesforce.NewGolfClaimRepo(sfClient), worker, gcsClient),
+			MarineCargo: handler.NewMarineCargoClaimHandler(salesforce.NewMarineCargoClaimRepo(sfClient), worker, gcsClient),
+			MarineCL:    handler.NewMarineCLClaimHandler(salesforce.NewMarineCLClaimRepo(sfClient), worker, gcsClient),
+			MarineHull:  handler.NewMarineHullClaimHandler(salesforce.NewMarineHullClaimRepo(sfClient), worker, gcsClient),
+			Other:       handler.NewOtherClaimHandler(salesforce.NewOtherClaimRepo(sfClient), worker, gcsClient),
+			Pet:         handler.NewPetClaimHandler(salesforce.NewPetClaimRepo(sfClient), worker, gcsClient),
+			TA:          handler.NewTAClaimHandler(salesforce.NewTAClaimRepo(sfClient), worker, gcsClient),
 			Location:    handler.NewLocationHandler(salesforce.NewLocationRepo(sfClient)),
 			Policy:      handler.NewPolicyHandler(salesforce.NewPolicyRepo(sfClient)),
 			Upload:      handler.NewUploadHandler(uploadRepo, gcsClient),

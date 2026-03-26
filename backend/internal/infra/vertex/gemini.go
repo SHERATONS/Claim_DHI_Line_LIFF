@@ -43,12 +43,21 @@ func (g *GeminiClient) GenerateContent(ctx context.Context, files []domain.FileI
 
 	var parts []*genai.Part
 	for _, f := range files {
-		parts = append(parts, &genai.Part{
-			InlineData: &genai.Blob{
-				MIMEType: f.MimeType,
-				Data:     f.Data,
-			},
-		})
+		if f.GCSURI != "" {
+			parts = append(parts, &genai.Part{
+				FileData: &genai.FileData{
+					MIMEType: f.MimeType,
+					FileURI:  f.GCSURI,
+				},
+			})
+		} else {
+			parts = append(parts, &genai.Part{
+				InlineData: &genai.Blob{
+					MIMEType: f.MimeType,
+					Data:     f.Data,
+				},
+			})
+		}
 	}
 
 	config := &genai.GenerateContentConfig{}
@@ -130,7 +139,7 @@ func (g *GeminiClient) AnalyzeClaim(ctx context.Context, form any, files []domai
 	prompt := fmt.Sprintf(`Analyze all provided claim documents.
 
 STRICT OUTPUT REQUIREMENT:
-Return ONLY valid JSON. No explanation.
+Return ONLY valid JSON. No explanation. No markdown formatting.
 
 JSON SCHEMA:
 {
@@ -165,6 +174,12 @@ STRICT RULES:
 7. The documents are primarily in Thai. You must proactively read, comprehend, and extract Thai text, Thai names, and Thai identifiers for verification.
 8. For files categorized as "p" (policy documents), dynamically analyze the visual content of the document to generate a short, descriptive title in English (e.g., "id_card", "policy_schedule", "passport").
 9. For "p" category files, the "new" field in the JSON MUST be formatted exactly as "p_{title_generated_from_content}.{extension}".
+10. For files categorized as "d" (claim-related documents):
+    a. If identified as a bill or invoice (medical, repair, etc.) -> generate a title as "bill_{bill_type}" (e.g., "bill_medical").
+    b. Otherwise -> generate a short, descriptive title in English based on content (e.g., "cat_injured", "car_damage").
+11. For all "d" category files, the "new" field in the JSON MUST be formatted exactly as "d_{title}.{extension}".
+12. ABSOLUTELY NO Thai characters allowed outside of JSON string values.
+13. STRICTLY return only the JSON object, starting with { and ending with }.
 
 Frontend Form Data (JSON):
 %s
@@ -180,12 +195,21 @@ Original File Names:
 
 	// 2. Attach actual files
 	for _, f := range files {
-		parts = append(parts, &genai.Part{
-			InlineData: &genai.Blob{
-				MIMEType: f.MimeType,
-				Data:     f.Data,
-			},
-		})
+		if f.GCSURI != "" {
+			parts = append(parts, &genai.Part{
+				FileData: &genai.FileData{
+					MIMEType: f.MimeType,
+					FileURI:  f.GCSURI,
+				},
+			})
+		} else {
+			parts = append(parts, &genai.Part{
+				InlineData: &genai.Blob{
+					MIMEType: f.MimeType,
+					Data:     f.Data,
+				},
+			})
+		}
 	}
 
 	config := &genai.GenerateContentConfig{
@@ -217,18 +241,23 @@ Original File Names:
 		return nil, fmt.Errorf("no text returned from Gemini")
 	}
 
+	jsonText := extractJSON(part.Text)
+
 	var result domain.ClaimAnalysisResult
-	if err := json.Unmarshal([]byte(part.Text), &result); err != nil {
-		cleanText := strings.TrimPrefix(part.Text, "```json\n")
-		cleanText = strings.TrimSuffix(cleanText, "\n```")
-		cleanText = strings.TrimSpace(cleanText)
-		
-		if err2 := json.Unmarshal([]byte(cleanText), &result); err2 != nil {
-			return nil, fmt.Errorf("failed to parse Gemini JSON: %w (raw: %s)", err2, part.Text)
-		}
+	if err := json.Unmarshal([]byte(jsonText), &result); err != nil {
+		return nil, fmt.Errorf("failed to parse Gemini JSON: %w (raw: %s)", err, part.Text)
 	}
 
 	return &result, nil
+}
+
+func extractJSON(text string) string {
+	start := strings.Index(text, "{")
+	end := strings.LastIndex(text, "}")
+	if start == -1 || end == -1 || end < start {
+		return text
+	}
+	return text[start : end+1]
 }
 
 
