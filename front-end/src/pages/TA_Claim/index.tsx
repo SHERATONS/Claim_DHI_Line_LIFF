@@ -27,7 +27,7 @@ interface FormValues {
     phone: string;
     email: string;
     incidentDateTime: string;
-    accidentPlace: string;
+    lossPlace: string;
     flightNumber: string;
     causeOfLoss: string;
     lossReserve: string;
@@ -38,7 +38,7 @@ interface FormErrors {
     phone?: string;
     email?: string;
     incidentDateTime?: string;
-    accidentPlace?: string;
+    lossPlace?: string;
     flightNumber?: string;
     causeOfLoss?: string;
     lossReserve?: string;
@@ -57,7 +57,7 @@ export default function ClaimForm() {
         phone: '',
         email: '',
         incidentDateTime: '',
-        accidentPlace: '',
+        lossPlace: '',
         flightNumber: '',
         causeOfLoss: '',
         lossReserve: '',
@@ -139,7 +139,7 @@ export default function ClaimForm() {
                 email: values.email || undefined,
                 incidentDateTime,
                 causeOfLoss: values.causeOfLoss,
-                lossPlace: values.accidentPlace,
+                lossPlace: values.lossPlace,
                 flightNumber: values.flightNumber,
                 lossReserve: values.lossReserve ? parseFloat(values.lossReserve.replace(/,/g, '')) : undefined,
             };
@@ -240,14 +240,14 @@ export default function ClaimForm() {
                     <ClaimDetailsSection
                         values={{
                             incidentDateTime: values.incidentDateTime,
-                            accidentPlace: values.accidentPlace,
+                            lossPlace: values.lossPlace,
                             causeOfLoss: values.causeOfLoss,
                             flightNumber: values.flightNumber,
                             lossReserve: values.lossReserve,
                         }}
                         errors={{
                             incidentDateTime: errors.incidentDateTime,
-                            accidentPlace: errors.accidentPlace,
+                            lossPlace: errors.lossPlace,
                             causeOfLoss: errors.causeOfLoss,
                             flightNumber: errors.flightNumber,
                             lossReserve: errors.lossReserve,

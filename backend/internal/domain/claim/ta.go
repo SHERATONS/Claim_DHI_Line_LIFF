@@ -10,7 +10,7 @@ type TAClaimRequest struct {
 	Phone            string
 	Email            string
 	IncidentDateTime string
-	AccidentPlace    string
+	LossPlace        string
 	FlightNumber     string
 	CauseOfLoss      string
 	LossReserve      string

@@ -597,7 +597,7 @@ export const golfSchema = baseClaimSchema.extend({
 
 // 7. TA (Travel Accident)
 export const taSchema = baseClaimSchema.extend({
-  accidentPlace: z
+  lossPlace: z
     .string()
     .min(1, 'กรุณาระบุสถานที่เกิดเหตุ (เช่น ชื่อโรงแรม, ชื่อถนน)')
     .max(200, 'สถานที่เกิดเหตุยาวเกินไป')

@@ -32,7 +32,7 @@ type taClaimForm struct {
 	Phone            string `form:"phone" binding:"required"`
 	Email            string `form:"email"`
 	IncidentDateTime string `form:"incidentDateTime" binding:"required"`
-	AccidentPlace    string `form:"accidentPlace"`
+	LossPlace        string `form:"lossPlace"`
 	FlightNumber     string `form:"flightNumber"`
 	CauseOfLoss      string `form:"causeOfLoss"`
 	LossReserve      string `form:"lossReserve"`
@@ -64,7 +64,7 @@ func (h *TAClaimHandler) Handle(c *gin.Context) {
 		Phone:            form.Phone,
 		Email:            form.Email,
 		IncidentDateTime: form.IncidentDateTime,
-		AccidentPlace:    form.AccidentPlace,
+		LossPlace:        form.LossPlace,
 		FlightNumber:     form.FlightNumber,
 		CauseOfLoss:      form.CauseOfLoss,
 		LossReserve:      form.LossReserve,

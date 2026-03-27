@@ -54,7 +54,7 @@ func (r *TAClaimRepo) Submit(ctx context.Context, req claim.TAClaimRequest) (*cl
 		Phone:            req.Phone,
 		Email:            req.Email,
 		IncidentDateTime: req.IncidentDateTime,
-		LossPlace:        req.AccidentPlace,
+		LossPlace:        req.LossPlace,
 		FlightNumber:     req.FlightNumber,
 		CauseOfLoss:      req.CauseOfLoss,
 		LossReserve:      req.LossReserve,

@@ -38,14 +38,14 @@ export function convertBEtoCE(dateTimeValue: string): string {
 interface ClaimDetailsSectionProps {
     values: {
         incidentDateTime: string;
-        accidentPlace: string;
+        lossPlace: string;
         causeOfLoss: string;    // Injury Details
         flightNumber?: string;
         lossReserve?: string;
     };
     errors: {
         incidentDateTime?: string;
-        accidentPlace?: string;
+        lossPlace?: string;
         causeOfLoss?: string;
         flightNumber?: string;
         lossReserve?: string;
@@ -71,11 +71,11 @@ export function ClaimDetailsSection({
             />
 
             <Input
-                id="accidentPlace"
+                id="lossPlace"
                 label="สถานที่เกิดเหตุ"
-                value={values.accidentPlace}
-                onChange={(e) => onChange('accidentPlace', e.target.value)}
-                error={errors.accidentPlace}
+                value={values.lossPlace}
+                onChange={(e) => onChange('lossPlace', e.target.value)}
+                error={errors.lossPlace}
                 required
                 placeholder="- ระบุสถานที่เกิดเหตุ -"
             />
