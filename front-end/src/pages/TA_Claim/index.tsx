@@ -18,8 +18,8 @@ import { InsuredInfoSection, PersonalDocumentUpload } from '@/components/feature
 // Placeholder policy data — will be replaced by Loxley API integration.
 const MOCK_POLICY_DATA = {
     policyNumber: '14003-151-200095621',
-    policyHolder: 'นายทดสอบ ระบบเคลม',
-    idcard: '1219900960846',
+    policyHolder: 'THAPHAT KAEWKOMJUN',
+    idcard: '3309900704292',
 };
 
 interface FormValues {
